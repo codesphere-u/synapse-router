@@ -1,5 +1,6 @@
 """Synapse-Router: Cost-Aware Multi-Model AI Agent Router & Cascade Gateway."""
 
+from synapse_router.aegis_bridge import create_aegis_g2_leaf, create_aegis_g2_payload
 from synapse_router.budget import BudgetEvaluation, BudgetExceededError, TokenBudgetGovernor
 from synapse_router.cache import (
     CachedResponseEntry,
@@ -16,6 +17,7 @@ from synapse_router.classifier import (
     Tier,
 )
 from synapse_router.health import CircuitState, EndpointHealthRegistry, EndpointHealthSnapshot
+from synapse_router.rate_limiter import RateGovernor, RateLimitConfig, RateLimitDecision
 from synapse_router.router import (
     CascadeHop,
     EndpointCandidateScore,
@@ -30,7 +32,7 @@ from synapse_router.router import (
 )
 from synapse_router.server import MCP_TOOLS_SPEC, SynapseMCPServer
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 __all__ = [
     "AgentStepRequest",
@@ -48,6 +50,9 @@ __all__ = [
     "ModelEndpoint",
     "ModelInvocationResult",
     "NoHealthyEndpointError",
+    "RateGovernor",
+    "RateLimitConfig",
+    "RateLimitDecision",
     "ResponseValidator",
     "RoutingDecisionReceipt",
     "SemanticPromptCache",
@@ -59,6 +64,8 @@ __all__ = [
     "ValidationOutcome",
     "compute_context_fingerprint",
     "compute_simhash64",
+    "create_aegis_g2_leaf",
+    "create_aegis_g2_payload",
     "default_endpoint_catalog",
     "hamming_distance64",
 ]

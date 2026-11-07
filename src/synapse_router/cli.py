@@ -421,6 +421,58 @@ def run_benchmark(num_requests: int = 500, as_json: bool = False) -> Dict[str, A
     return report
 
 
+def run_rate_status(endpoint: Optional[str] = None, as_json: bool = False) -> Dict[str, Any]:
+    """Query sliding-window RPM and TPM consumption across registered endpoints."""
+    router = SynapseRouter()
+    endpoints = [endpoint] if endpoint else sorted(router.endpoints.keys())
+    statuses = {ep_id: router.rate_governor.get_status(ep_id) for ep_id in endpoints}
+
+    if as_json:
+        print(json.dumps(statuses, indent=2))
+    else:
+        print("=" * 80)
+        print("SYNAPSE-ROUTER SLIDING-WINDOW RATE LIMIT GOVERNOR STATUS")
+        print("=" * 80)
+        for ep_id, st in statuses.items():
+            print(
+                f"{ep_id:<28} | RPM: {st['current_rpm']:>2}/{st['max_rpm']:<2} ({st['rpm_utilization_pct']:>5.1f}%) | "
+                f"TPM: {st['current_tpm']:>5}/{st['max_tpm']:<6} ({st['tpm_utilization_pct']:>5.1f}%) | "
+                f"Status: {'SATURATED' if st['saturated'] else 'HEALTHY'}"
+            )
+        print("=" * 80)
+    return statuses
+
+
+def run_export_aegis(
+    cost_usd: float = 0.004,
+    budget_cap_usd: float = 0.05,
+    tokens_used: int = 1200,
+    token_budget_cap: int = 120_000,
+    model_id: str = "claude-3-5-sonnet",
+    task_id: str = "synapse_routing_task",
+    task_prompt: str = "",
+    as_json: bool = True,
+) -> Dict[str, Any]:
+    """Generate canonical Nexus Aegis G2 attestation leaf with RFC 6962 SHA-256 leaf digest."""
+    from synapse_router.aegis_bridge import create_aegis_g2_leaf
+
+    leaf = create_aegis_g2_leaf(
+        task_id=task_id,
+        task_prompt=task_prompt,
+        cost_usd=cost_usd,
+        budget_cap_usd=budget_cap_usd,
+        tokens_used=tokens_used,
+        token_budget_cap=token_budget_cap,
+        model_id=model_id,
+    )
+    if as_json:
+        print(json.dumps(leaf, indent=2))
+    else:
+        print(f"G2 Leaf Hash: {leaf['leaf_hash']}")
+        print(f"G2 Passed   : {leaf['payload']['passed']} (Score: {leaf['payload']['score']})")
+    return leaf
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="synapse-router",
@@ -435,6 +487,19 @@ def main(argv: Optional[List[str]] = None) -> int:
     bench_p.add_argument("--requests", type=int, default=500, help="Number of requests to benchmark")
     bench_p.add_argument("--json", action="store_true", help="Emit JSON report")
 
+    rate_p = sub.add_parser("rate-status", help="Inspect sliding-window RPM and TPM consumption")
+    rate_p.add_argument("--endpoint", type=str, default=None, help="Specific endpoint ID")
+    rate_p.add_argument("--json", action="store_true", help="Emit JSON output")
+
+    aegis_p = sub.add_parser("export-aegis", help="Export canonical Nexus Aegis G2 attestation leaf")
+    aegis_p.add_argument("--cost", type=float, default=0.004, help="Actual cost USD")
+    aegis_p.add_argument("--budget", type=float, default=0.05, help="Budget cap USD")
+    aegis_p.add_argument("--tokens", type=int, default=1200, help="Tokens used")
+    aegis_p.add_argument("--model", type=str, default="claude-3-5-sonnet", help="Model ID")
+    aegis_p.add_argument("--task-id", type=str, default="synapse_routing_task", help="Task ID")
+    aegis_p.add_argument("--prompt", type=str, default="", help="Task prompt")
+    aegis_p.add_argument("--json", action="store_true", default=True, help="Emit JSON output")
+
     sub.add_parser("mcp", help="Start JSON-RPC 2.0 MCP server over stdio")
 
     args = parser.parse_args(argv)
@@ -443,6 +508,20 @@ def main(argv: Optional[List[str]] = None) -> int:
         return 0
     if args.command == "benchmark":
         run_benchmark(num_requests=args.requests, as_json=args.json)
+        return 0
+    if args.command == "rate-status":
+        run_rate_status(endpoint=args.endpoint, as_json=args.json)
+        return 0
+    if args.command == "export-aegis":
+        run_export_aegis(
+            cost_usd=args.cost,
+            budget_cap_usd=args.budget,
+            tokens_used=args.tokens,
+            model_id=args.model,
+            task_id=args.task_id,
+            task_prompt=args.prompt,
+            as_json=args.json,
+        )
         return 0
     if args.command == "mcp":  # pragma: no cover
         SynapseMCPServer().serve_stdio()

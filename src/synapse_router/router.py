@@ -13,6 +13,7 @@ from synapse_router.budget import BudgetExceededError, TokenBudgetGovernor
 from synapse_router.cache import SemanticPromptCache
 from synapse_router.classifier import AgentStepRequest, ComplexityAnalysis, TaskComplexityClassifier, Tier
 from synapse_router.health import EndpointHealthRegistry
+from synapse_router.rate_limiter import RateGovernor
 
 
 class NoHealthyEndpointError(RuntimeError):
@@ -307,6 +308,7 @@ class SynapseRouter:
         health_registry: Optional[EndpointHealthRegistry] = None,
         cache: Optional[SemanticPromptCache] = None,
         budget_governor: Optional[TokenBudgetGovernor] = None,
+        rate_governor: Optional[RateGovernor] = None,
         cost_weight: float = 0.35,
         latency_weight: float = 0.25,
         signing_secret: str = "synapse-router-deterministic-hmac-key",
@@ -315,6 +317,7 @@ class SynapseRouter:
         self.health = health_registry or EndpointHealthRegistry()
         self.cache = cache or SemanticPromptCache()
         self.budget = budget_governor or TokenBudgetGovernor()
+        self.rate_governor = rate_governor or RateGovernor()
         self.cost_weight = cost_weight
         self.latency_weight = latency_weight
         self._signing_secret = signing_secret.encode("utf-8")
@@ -703,6 +706,10 @@ class SynapseRouter:
                 cost_usd=hop_cost,
                 tokens=inv_result.input_tokens + inv_result.output_tokens,
             )
+            self.rate_governor.record_consumption(
+                candidate_ep.id,
+                tokens=inv_result.input_tokens + inv_result.output_tokens,
+            )
 
             validation = ResponseValidator.validate(request, inv_result)
             final_result = inv_result
@@ -788,4 +795,25 @@ class SynapseRouter:
             output_text=final_result.output_text,
             confidence=final_result.confidence,
             hmac_sha256_signature=self._sign_receipt(unsigned),
+        )
+
+    def export_aegis_g2(
+        self,
+        receipt: RoutingDecisionReceipt,
+        task_prompt: str = "",
+        budget_cap_usd: float = 1.0,
+        token_budget_cap: int = 120_000,
+    ) -> Dict[str, Any]:
+        """Export a RoutingDecisionReceipt into a canonical Nexus Aegis G2 attestation leaf."""
+        from synapse_router.aegis_bridge import create_aegis_g2_leaf
+
+        return create_aegis_g2_leaf(
+            receipt_or_eval=receipt,
+            task_id=receipt.workflow_id or receipt.step_id,
+            task_prompt=task_prompt,
+            cost_usd=receipt.total_cost_usd,
+            budget_cap_usd=budget_cap_usd,
+            tokens_used=500 * max(1, len(receipt.cascade_hops)),
+            token_budget_cap=token_budget_cap,
+            model_id=receipt.selected_endpoint_id,
         )

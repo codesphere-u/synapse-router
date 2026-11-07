@@ -4,7 +4,9 @@
 [![Python 3.10 | 3.11 | 3.12](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue.svg)](https://github.com/codesphere-u/synapse-router)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![MCP Server](https://img.shields.io/badge/MCP-JSON--RPC%202.0-purple.svg)](src/synapse_router/server.py)
-[![Tests: 61 Passed](https://img.shields.io/badge/tests-61%20passed-brightgreen.svg)](tests/)
+[![Version: 1.1.0](https://img.shields.io/badge/version-1.1.0-blue.svg)](CHANGELOG.md)
+[![Tests: 77 Passed](https://img.shields.io/badge/tests-77%20passed-brightgreen.svg)](tests/)
+[![Nexus Aegis Gate: G2](https://img.shields.io/badge/Nexus%20Aegis-G2__BUDGET__ROUTING-teal.svg)](https://github.com/codesphere-u/nexus-aegis)
 
 **Cost-Aware Multi-Model AI Agent Router, Confidence-Gated Cascade Escalation, 3-State Circuit Breaker & 64-Bit SimHash Semantic Cache Gateway.**
 

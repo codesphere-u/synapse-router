@@ -88,6 +88,36 @@ MCP_TOOLS_SPEC: List[Dict[str, Any]] = [
             },
         },
     },
+    {
+        "name": "synapse_rate_limit_status",
+        "description": (
+            "Query sliding-window RPM and TPM consumption, ceiling limits, and saturation status for a model endpoint."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "endpoint_id": {"type": "string", "description": "Model endpoint ID to inspect."},
+            },
+            "required": ["endpoint_id"],
+        },
+    },
+    {
+        "name": "synapse_export_aegis_g2",
+        "description": (
+            "Export canonical RFC 6962 G2_BUDGET_ROUTING attestation leaf for a routing receipt or simulation parameters."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "cost_usd": {"type": "number"},
+                "budget_cap_usd": {"type": "number"},
+                "tokens_used": {"type": "integer"},
+                "model_id": {"type": "string"},
+                "task_id": {"type": "string"},
+                "task_prompt": {"type": "string"},
+            },
+        },
+    },
 ]
 
 
@@ -112,7 +142,7 @@ class SynapseMCPServer:
                     req_id,
                     {
                         "protocolVersion": "2024-11-05",
-                        "serverInfo": {"name": "synapse-router-mcp", "version": "1.0.0"},
+                        "serverInfo": {"name": "synapse-router-mcp", "version": "1.1.0"},
                         "capabilities": {"tools": {"listChanged": False}},
                     },
                 )
@@ -143,6 +173,8 @@ class SynapseMCPServer:
                 "classify_task_complexity",
                 "inspect_endpoint_health",
                 "check_budget_status",
+                "synapse_rate_limit_status",
+                "synapse_export_aegis_g2",
             }:
                 return self._ok(req_id, self._dispatch_tool(method, params))
 
@@ -208,6 +240,22 @@ class SynapseMCPServer:
             tenant_id = args.get("tenant_id", "default-tenant")
             workflow_id = args.get("workflow_id", "default-workflow")
             return self.router.budget.get_status(tenant_id=tenant_id, workflow_id=workflow_id)
+
+        if tool_name == "synapse_rate_limit_status":
+            endpoint_id = args.get("endpoint_id", "claude-3-5-sonnet")
+            return self.router.rate_governor.get_status(endpoint_id)
+
+        if tool_name == "synapse_export_aegis_g2":
+            from synapse_router.aegis_bridge import create_aegis_g2_leaf
+            return create_aegis_g2_leaf(
+                receipt_or_eval=args,
+                task_id=args.get("task_id", "synapse_routing"),
+                task_prompt=args.get("task_prompt", ""),
+                cost_usd=float(args.get("cost_usd", 0.0)),
+                budget_cap_usd=float(args.get("budget_cap_usd", 1.0)),
+                tokens_used=int(args.get("tokens_used", 0)),
+                model_id=str(args.get("model_id", "claude-3-5-sonnet")),
+            )
 
         raise ValueError(f"Unknown MCP tool: {tool_name}")
 

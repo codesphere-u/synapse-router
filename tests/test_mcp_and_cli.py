@@ -25,6 +25,8 @@ def test_mcp_server_initialize_ping_and_tools_list() -> None:
         "classify_task_complexity",
         "inspect_endpoint_health",
         "check_budget_status",
+        "synapse_rate_limit_status",
+        "synapse_export_aegis_g2",
     }
 
 
