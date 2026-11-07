@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "synapse-router"
+version = "1.0.0"
+description = "Cost-Aware Multi-Model AI Agent Router, Confidence-Gated Cascade Escalation, Circuit Breaker & Semantic Cache Gateway"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+authors = [
+  { name = "Akandwanaho Ivan Alvin", email = "codesphere-u@users.noreply.github.com" }
+]
+keywords = [
+  "ai-agents",
+  "llm-router",
+  "model-routing",
+  "semantic-cache",
+  "circuit-breaker",
+  "mcp",
+  "cost-optimization",
+  "confidence-cascade"
+]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Software Development :: Libraries :: Python Modules"
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.4.0",
+]
+
+[project.scripts]
+synapse-router = "synapse_router.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/codesphere-u/synapse-router"
+Repository = "https://github.com/codesphere-u/synapse-router"
+Issues = "https://github.com/codesphere-u/synapse-router/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-q"
