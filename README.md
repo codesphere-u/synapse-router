@@ -221,6 +221,30 @@ pytest -v
 
 ---
 
+## Hosted endpoint (Vercel)
+
+A free, public, stateless deployment of Synapse Router runs over **MCP Streamable HTTP**:
+
+| | |
+|---|---|
+| MCP endpoint | `https://synapse-router.vercel.app/mcp` (JSON-RPC 2.0 over `POST`) |
+| Health probe | `https://synapse-router.vercel.app/health` |
+
+```bash
+curl -s -X POST https://synapse-router.vercel.app/mcp -H 'Content-Type: application/json' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+```
+
+Client config (any Streamable-HTTP-capable MCP client):
+
+```json
+{ "mcpServers": { "synapse-router": { "url": "https://synapse-router.vercel.app/mcp" } } }
+```
+
+**Hosted limitations:** All 6 tools are available. Router/cache/budget state is **in-memory and ephemeral** per serverless instance.
+
+The hosted gateway is [`api/index.py`](api/index.py); it enforces a 1 MB body limit, strict JSON-RPC envelopes and the tool restrictions above. Deploy your own copy with `npx vercel deploy --prod` (entrypoint is configured in `pyproject.toml` under `[tool.vercel]`).
+
 ## License
 
 Released under the [MIT License](LICENSE). Copyright (c) 2026 Akandwanaho Ivan Alvin (`@codesphere-u`).
