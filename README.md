@@ -245,6 +245,15 @@ Determine whether a task needs an expensive frontier model (Claude 3.5 Sonnet / 
 }
 ```
 
+### Exposed MCP Resources & Prompts
+
+- **Resources (`resources/list`, `resources/read`)**:
+  - `synapse://endpoints/catalog`: Live registry of configured model endpoints across tiers (`FAST_LOCAL`, `BALANCED`, `FRONTIER_REASONING`) with pricing and latency SLAs.
+  - `synapse://health/summary`: Real-time circuit breaker states, sliding-window rate limiters, and tenant spend utilization.
+- **Prompts (`prompts/list`, `prompts/get`)**:
+  - `route-task-advisor`: Guided prompt to analyze user task complexity, token volume, and recommend the optimal model tier and fallback cascade.
+  - `budget-allocation-planner`: Prompt template to configure sliding-window token and USD budgets with 80% soft-cap degradation rules.
+
 ---
 
 ## Architecture Decision Records (ADRs)
@@ -256,13 +265,13 @@ Determine whether a task needs an expensive frontier model (Claude 3.5 Sonnet / 
 
 ## Testing
 
-Run the full 90-test suite:
+Run the full 93-test suite:
 
 ```bash
 pytest -v
 ```
 
-All **90 tests** validate Pareto utility routing, SimHash semantic caching, confidence cascade escalation, 3-state circuit breakers, token/USD budget enforcement, rate limiters, RFC 6962 G2 attestation export, and Vercel serverless gateways.
+All **93 tests** validate Pareto utility routing, SimHash semantic caching, confidence cascade escalation, 3-state circuit breakers, token/USD budget enforcement, rate limiters, RFC 6962 G2 attestation export, and Vercel serverless gateways.
 
 ---
 

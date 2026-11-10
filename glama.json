@@ -23,5 +23,10 @@
     "model-routing",
     "semantic-cache",
     "circuit-breaker"
+  ],
+  "capabilities": [
+    "tools",
+    "resources",
+    "prompts"
   ]
 }

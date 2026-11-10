@@ -121,11 +121,160 @@ MCP_TOOLS_SPEC: List[Dict[str, Any]] = [
 ]
 
 
+MCP_RESOURCES_SPEC: List[Dict[str, Any]] = [
+    {
+        "uri": "synapse://endpoints/catalog",
+        "name": "Model Endpoints & Routing Tiers Catalog",
+        "description": "Registry of configured model endpoints across FAST_LOCAL, BALANCED, and FRONTIER_REASONING tiers with cost, latency SLA, and context limits.",
+        "mimeType": "application/json",
+    },
+    {
+        "uri": "synapse://health/summary",
+        "name": "Circuit Breakers & Budget Status Summary",
+        "description": "Live state of 3-state circuit breakers (CLOSED/OPEN/HALF_OPEN), sliding-window rate limiters, and tenant spend utilization.",
+        "mimeType": "application/json",
+    },
+]
+
+MCP_PROMPTS_SPEC: List[Dict[str, Any]] = [
+    {
+        "name": "route-task-advisor",
+        "description": "Evaluate prompt complexity and recommend the optimal model tier (FAST_LOCAL vs BALANCED vs FRONTIER_REASONING).",
+        "arguments": [
+            {
+                "name": "task_prompt",
+                "description": "The user task or agent instruction to evaluate.",
+                "required": True,
+            },
+            {
+                "name": "latency_sla_ms",
+                "description": "Optional strict latency SLA target in milliseconds.",
+                "required": False,
+            },
+        ],
+    },
+    {
+        "name": "budget-allocation-planner",
+        "description": "Formulate a token and USD budget allocation strategy with 80% soft-cap degradation rules.",
+        "arguments": [
+            {
+                "name": "workflow_name",
+                "description": "Name or identifier of the agent workflow.",
+                "required": True,
+            },
+            {
+                "name": "target_cost_usd",
+                "description": "Target ceiling cost in USD.",
+                "required": True,
+            },
+        ],
+    },
+]
+
+
 class SynapseMCPServer:
     """Stateless/Stateful JSON-RPC 2.0 MCP Server wrapping a SynapseRouter instance."""
 
     def __init__(self, router: Optional[SynapseRouter] = None) -> None:
         self.router = router or SynapseRouter()
+
+    def get_resource_definitions(self) -> List[Dict[str, Any]]:
+        return list(MCP_RESOURCES_SPEC)
+
+    def get_prompt_definitions(self) -> List[Dict[str, Any]]:
+        return list(MCP_PROMPTS_SPEC)
+
+    def _read_resource(self, uri: str) -> Dict[str, Any]:
+        if uri == "synapse://endpoints/catalog":
+            endpoints_info = []
+            for ep_id, ep in sorted(self.router.endpoints.items()):
+                endpoints_info.append({
+                    "endpoint_id": ep_id,
+                    "provider": ep.provider,
+                    "tier": ep.tier.name,
+                    "cost_per_1k_input_tokens": ep.cost_per_1k_input,
+                    "cost_per_1k_output_tokens": ep.cost_per_1k_output,
+                    "p50_latency_ms": ep.p50_latency_ms,
+                    "p95_latency_ms": ep.p95_latency_ms,
+                    "context_window_tokens": ep.context_window,
+                })
+            return {
+                "contents": [
+                    {
+                        "uri": uri,
+                        "mimeType": "application/json",
+                        "text": json.dumps({"endpoints_count": len(endpoints_info), "endpoints": endpoints_info}, indent=2),
+                    }
+                ]
+            }
+        if uri == "synapse://health/summary":
+            health_summary = {}
+            for ep_id in sorted(self.router.endpoints.keys()):
+                snap = self.router.health.snapshot(ep_id)
+                health_summary[ep_id] = {
+                    "state": snap.state.value,
+                    "consecutive_failures": snap.consecutive_failures,
+                    "rolling_error_rate": round(snap.rolling_error_rate, 4) if snap.rolling_error_rate is not None else 0.0,
+                    "ema_latency_ms": round(snap.ema_latency_ms, 2) if snap.ema_latency_ms is not None else 0.0,
+                    "is_available": snap.is_available,
+                }
+            return {
+                "contents": [
+                    {
+                        "uri": uri,
+                        "mimeType": "application/json",
+                        "text": json.dumps({"health": health_summary}, indent=2),
+                    }
+                ]
+            }
+        raise KeyError(f"Unknown resource URI: {uri}")
+
+    def _get_prompt(self, name: str, arguments: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+        args = arguments or {}
+        if name == "route-task-advisor":
+            task_prompt = args.get("task_prompt", "")
+            sla = args.get("latency_sla_ms", "Not specified")
+            return {
+                "description": "Analyze prompt complexity and suggest optimal routing tier",
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": {
+                            "type": "text",
+                            "text": (
+                                "Analyze the following agent task and recommend the best model routing tier "
+                                "(FAST_LOCAL, BALANCED, or FRONTIER_REASONING):\n\n"
+                                f"Task Prompt: {task_prompt}\n"
+                                f"Latency SLA: {sla} ms\n\n"
+                                "1. Break down required reasoning vs extraction.\n"
+                                "2. Estimate input/output token volume.\n"
+                                "3. Recommend model endpoint and fallback cascade."
+                            ),
+                        },
+                    }
+                ],
+            }
+        if name == "budget-allocation-planner":
+            wf = args.get("workflow_name", "unnamed-workflow")
+            target = args.get("target_cost_usd", "10.00")
+            return {
+                "description": "Formulate token/cost budget allocation plan",
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": {
+                            "type": "text",
+                            "text": (
+                                f"Design a budget allocation plan for workflow '{wf}' with a cost ceiling of ${target}.\n"
+                                "1. Allocate token quotas across high-frequency and low-frequency steps.\n"
+                                "2. Set up the 80% soft-cap degradation rules.\n"
+                                "3. Define circuit breaker thresholds for HTTP 429 and endpoint failovers."
+                            ),
+                        },
+                    }
+                ],
+            }
+        raise KeyError(f"Unknown prompt: {name}")
 
     def handle_request(self, request: Dict[str, Any]) -> Dict[str, Any]:
         """Process a single JSON-RPC 2.0 request dictionary and return a JSON-RPC 2.0 response."""
@@ -143,13 +292,32 @@ class SynapseMCPServer:
                     {
                         "protocolVersion": "2024-11-05",
                         "serverInfo": {"name": "synapse-router-mcp", "version": "1.1.0"},
-                        "capabilities": {"tools": {"listChanged": False}},
+                        "capabilities": {
+                            "tools": {"listChanged": False},
+                            "resources": {"subscribe": False, "listChanged": False},
+                            "prompts": {"listChanged": False},
+                        },
                     },
                 )
             if method == "ping":
                 return self._ok(req_id, {"status": "pong"})
             if method == "tools/list":
                 return self._ok(req_id, {"tools": MCP_TOOLS_SPEC})
+            if method == "resources/list":
+                return self._ok(req_id, {"resources": self.get_resource_definitions()})
+            if method == "resources/read":
+                uri = params.get("uri")
+                if not uri or not isinstance(uri, str):
+                    return self._error(req_id, -32602, "Missing 'uri' parameter.")
+                return self._ok(req_id, self._read_resource(uri))
+            if method == "prompts/list":
+                return self._ok(req_id, {"prompts": self.get_prompt_definitions()})
+            if method == "prompts/get":
+                prompt_name = params.get("name")
+                prompt_args = params.get("arguments")
+                if not prompt_name or not isinstance(prompt_name, str):
+                    return self._error(req_id, -32602, "Missing prompt 'name'.")
+                return self._ok(req_id, self._get_prompt(prompt_name, prompt_args))
             if method == "tools/call":
                 tool_name = params.get("name")
                 arguments = params.get("arguments") or {}
