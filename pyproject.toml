@@ -7,7 +7,7 @@ name = "synapse-router"
 version = "1.1.0"
 description = "Cost-Aware Multi-Model AI Agent Router, Confidence-Gated Cascade Escalation, Circuit Breaker & Semantic Cache Gateway"
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
 requires-python = ">=3.10"
 authors = [
   { name = "Akandwanaho Ivan Alvin", email = "codesphere-u@users.noreply.github.com" }
@@ -25,7 +25,6 @@ keywords = [
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Developers",
-  "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",

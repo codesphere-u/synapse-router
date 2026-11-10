@@ -77,10 +77,23 @@ INTERNAL_ERROR = -32603
 mcp_engine = SynapseMCPServer()
 
 app = FastAPI(
-    title="Synapse Router (hosted MCP)",
+    title=f"Synapse Router MCP Server ({SERVER_VERSION})",
+    description="Cost-Aware Semantic Model Routing & Complexity Classification Model Context Protocol (MCP) server running on Vercel Serverless. "
+                "Supports dynamic model selection, budget enforcement, SLA monitoring, and NexusAegis G2 export. "
+                "Built by CodeSphere Innovations.",
     version=SERVER_VERSION,
     docs_url="/docs",
+    redoc_url="/redoc",
     openapi_url="/openapi.json",
+    contact={
+        "name": "Codesphere Innovations",
+        "url": "https://github.com/codesphere-u/synapse-router",
+        "email": "codesphereinnovationz@gmail.com",
+    },
+    license_info={
+        "name": "MIT License",
+        "url": "https://opensource.org/licenses/MIT",
+    },
 )
 app.add_middleware(
     CORSMiddleware,

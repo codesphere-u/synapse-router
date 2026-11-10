@@ -114,6 +114,15 @@ def render_developer_portal(
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{safe_name} &bull; MCP Server & Live Playground</title>
+  <meta name="description" content="{safe_tagline}" />
+  <meta property="og:title" content="{safe_name} &bull; MCP Server & Live Playground" />
+  <meta property="og:description" content="{safe_tagline}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="{safe_endpoint}" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="{safe_name} &bull; MCP Server & Playground" />
+  <meta name="twitter:description" content="{safe_tagline}" />
+  <meta name="theme-color" content="#0b0f19" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22><text y=%2226%22 font-size=%2226%22>🧠</text></svg>">
   <style>
     :root {{
@@ -278,7 +287,9 @@ def render_developer_portal(
         </div>
         <div class="links">
           <a class="btn" href="{safe_github}" target="_blank" rel="noopener">GitHub</a>
-          <a class="btn" href="https://glama.ai/mcp" target="_blank" rel="noopener">Glama Gateway</a>
+          <a class="btn" href="/docs" target="_blank" rel="noopener">Swagger UI &rarr;</a>
+          <a class="btn" href="/redoc" target="_blank" rel="noopener">ReDoc &rarr;</a>
+          <a class="btn" href="https://glama.ai/mcp" target="_blank" rel="noopener">Glama</a>
           <a class="btn" href="https://smithery.ai" target="_blank" rel="noopener">Smithery</a>
         </div>
       </div>
@@ -380,14 +391,20 @@ def render_developer_portal(
         <div class="pane">
           <div class="pane-head">
             <span class="pane-title">Request (JSON-RPC 2.0)</span>
-            <button class="btn btn-sm btn-accent" id="send-btn" onclick="sendJsonRpc()">Send Request &rarr;</button>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-sm" id="copy-curl-btn" onclick="copyAsCurl()">Copy as cURL</button>
+              <button class="btn btn-sm btn-accent" id="send-btn" onclick="sendJsonRpc()">Send Request &rarr;</button>
+            </div>
           </div>
           <textarea id="rpc-request" class="code-editor">{html.escape(sample_call_json)}</textarea>
         </div>
         <div class="pane">
           <div class="pane-head">
             <span class="pane-title">Response</span>
-            <span id="rpc-meta" class="text-xs mono text-muted">Ready</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <button class="btn btn-sm btn-ghost" id="copy-resp-btn" onclick="copyResponse()">Copy</button>
+              <span id="rpc-meta" class="text-xs mono text-muted">Ready</span>
+            </div>
           </div>
           <pre id="rpc-response" class="response-box">// Click "Send Request" to test live serverless execution</pre>
         </div>
@@ -438,6 +455,39 @@ def render_developer_portal(
         setTimeout(() => {{
           btn.innerText = old;
           btn.classList.remove('copied');
+        }}, 2000);
+      }});
+    }}
+
+    function copyAsCurl() {{
+      const raw = document.getElementById('rpc-request').value;
+      let formatted = raw.trim();
+      try {{
+        formatted = JSON.stringify(JSON.parse(raw));
+      }} catch (_) {{}}
+      const escaped = formatted.replace(/'/g, "'\\\\''");
+      const ep = (window.location.origin || '') + '/mcp';
+      const cmd = `curl -X POST "${{ep}}" \\\n  -H "Content-Type: application/json" \\\n  -d '${{escaped}}'`;
+      navigator.clipboard.writeText(cmd).then(() => {{
+        const btn = document.getElementById('copy-curl-btn');
+        const old = btn.innerText;
+        btn.innerText = 'Copied cURL!';
+        btn.classList.add('copied');
+        setTimeout(() => {{
+          btn.innerText = old;
+          btn.classList.remove('copied');
+        }}, 2000);
+      }});
+    }}
+
+    function copyResponse() {{
+      const text = document.getElementById('rpc-response').textContent;
+      navigator.clipboard.writeText(text).then(() => {{
+        const btn = document.getElementById('copy-resp-btn');
+        const old = btn.innerText;
+        btn.innerText = 'Copied!';
+        setTimeout(() => {{
+          btn.innerText = old;
         }}, 2000);
       }});
     }}
