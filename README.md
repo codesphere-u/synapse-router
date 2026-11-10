@@ -6,7 +6,7 @@
 [![MCP Spec](https://img.shields.io/badge/MCP-2024--11--05-7c3aed.svg)](https://modelcontextprotocol.io/)
 [![Vercel Deployment](https://img.shields.io/badge/Vercel-Operational-10b981?logo=vercel&logoColor=white)](https://synapse-router.vercel.app/mcp)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-✔%20Connected-10b981?logo=anthropic&logoColor=white)](#connect-to-claude-code--cursor--windsurf)
-[![Glama Gateway](https://img.shields.io/badge/Glama-Verified-38bdf8)](https://glama.ai/mcp)
+[![Glama Score](https://glama.ai/mcp/servers/codesphere-u/synapse-router/badges/score.svg)](https://glama.ai/mcp/servers/codesphere-u/synapse-router)
 [![Smithery Ready](https://img.shields.io/badge/Smithery-Ready-purple)](smithery.yaml)
 [![Tests: 84 Passed](https://img.shields.io/badge/tests-84%20passed-brightgreen.svg)](tests/)
 [![Nexus Aegis Gate: G2](https://img.shields.io/badge/Nexus%20Aegis-G2__BUDGET__ROUTING-teal.svg)](https://github.com/codesphere-u/nexus-aegis)
@@ -15,6 +15,12 @@
 **Cost-Aware Multi-Model AI Agent Router, Confidence-Gated Cascade Escalation, 3-State Circuit Breaker & 64-Bit SimHash Semantic Cache Gateway.**
 
 > 🚀 **Live Interactive Developer Portal & Playground:** Visit [`https://synapse-router.vercel.app`](https://synapse-router.vercel.app) in your web browser to test routing live, inspect schemas, and copy 1-click configurations for Claude Code, Cursor, Windsurf, and Claude Desktop.
+
+<p align="center">
+  <a href="https://glama.ai/mcp/servers/codesphere-u/synapse-router">
+    <img src="https://glama.ai/mcp/servers/codesphere-u/synapse-router/badges/card.svg" alt="synapse-router MCP server – quality and maintenance score on Glama" width="500" />
+  </a>
+</p>
 
 ---
 
