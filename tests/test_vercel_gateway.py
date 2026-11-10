@@ -78,3 +78,14 @@ def test_forbidden_args_stripped_and_refused():
             assert arg not in tools[tool]["inputSchema"].get("properties", {})
             res = rpc("tools/call", {"name": tool, "arguments": {arg: "/etc"}}).json()["result"]
             assert res["isError"] is True
+
+
+def test_rate_limit_returns_429_with_retry_after(monkeypatch):
+    monkeypatch.setattr(gateway, "RATE_LIMIT_PER_MIN", 3)
+    gateway._hits.clear()
+    codes = [rpc("ping", id_=i).status_code for i in range(5)]
+    assert codes[:3] == [200, 200, 200] and codes[3] == 429
+    r = rpc("ping")
+    assert r.status_code == 429 and "Retry-After" in r.headers
+    assert r.json()["error"]["code"] == -32000
+    gateway._hits.clear()

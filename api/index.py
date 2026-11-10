@@ -13,6 +13,9 @@ from __future__ import annotations
 
 import copy
 import json
+import os
+import time
+from collections import defaultdict, deque
 from pathlib import Path
 import sys
 from typing import Any, Dict, List, Optional
@@ -33,6 +36,30 @@ from synapse_router.server import SynapseMCPServer
 SERVER_NAME = "synapse-router"
 SERVER_VERSION = "1.1.0"
 MAX_BODY_BYTES = 1_000_000
+
+# Best-effort per-IP sliding-window rate limit. State is per serverless instance, so it
+# bounds abuse of a warm instance but is not a global quota (use Vercel Firewall for that).
+RATE_LIMIT_PER_MIN = int(os.environ.get("MCP_RATE_LIMIT_PER_MIN", "60"))
+_hits: Dict[str, deque] = defaultdict(deque)
+
+
+def _rate_limited(request: Request) -> Optional[int]:
+    """Return Retry-After seconds when the caller exceeded the limit, else None."""
+    if RATE_LIMIT_PER_MIN <= 0:
+        return None
+    fwd = request.headers.get("x-forwarded-for", "")
+    ip = fwd.split(",")[0].strip() or (request.client.host if request.client else "unknown")
+    now = time.monotonic()
+    q = _hits[ip]
+    while q and now - q[0] > 60:
+        q.popleft()
+    if len(q) >= RATE_LIMIT_PER_MIN:
+        return max(1, int(60 - (now - q[0])))
+    q.append(now)
+    if len(_hits) > 10_000:  # bound memory
+        for k in [k for k, v in _hits.items() if not v or now - v[-1] > 60]:
+            _hits.pop(k, None)
+    return None
 
 # Tools hidden and refused on the public hosted deployment (filesystem / process access).
 HOSTED_BLOCKED_TOOLS = frozenset([])
@@ -177,6 +204,11 @@ async def sse_legacy(request: Request):
 @app.post("/messages")
 @app.post("/")
 async def handle_jsonrpc(request: Request):
+    retry = _rate_limited(request)
+    if retry is not None:
+        resp = _error(-32000, "Rate limit exceeded. Slow down or self-host.", status=429)
+        resp.headers["Retry-After"] = str(retry)
+        return resp
     raw = await request.body()
     if len(raw) > MAX_BODY_BYTES:
         return _error(INVALID_REQUEST, "Request body too large.", status=413)

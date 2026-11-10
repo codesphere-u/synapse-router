@@ -30,7 +30,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
 
-      - name: Run 61-test pytest suite
+      - name: Run pytest suite
         run: pytest -v
 
       - name: Verify 20-step multi-agent workflow demo

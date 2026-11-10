@@ -1,0 +1,14 @@
+name: Production smoke test
+
+on:
+  deployment_status:
+  workflow_dispatch:
+
+jobs:
+  smoke-production:
+    # Vercel reports deployments to GitHub; test the live endpoint once a production deploy succeeds.
+    if: github.event_name == 'workflow_dispatch' || (github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Production')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python scripts/smoke_test.py "https://synapse-router.vercel.app" 6
