@@ -4,9 +4,15 @@
     "codesphere-u"
   ],
   "name": "synapse-router",
-  "description": "Dynamic Semantic Routing Engine and Multi-Tier LLM Cost Optimization Gateway MCP Server.",
+  "description": "Cost-aware multi-model AI agent router, confidence cascade escalation, circuit breaker, and semantic cache gateway.",
   "type": "mcp_server",
   "status": "production",
+  "url": "https://synapse-router.vercel.app/sse",
+  "endpoints": {
+    "sse": "https://synapse-router.vercel.app/sse",
+    "http": "https://synapse-router.vercel.app/messages",
+    "health": "https://synapse-router.vercel.app/health"
+  },
   "transport": [
     "http",
     "sse",
@@ -14,10 +20,10 @@
   ],
   "keywords": [
     "mcp",
-    "model-context-protocol",
-    "semantic-router",
-    "cost-optimizer",
-    "circuit-breaker",
-    "llm-gateway"
+    "ai-agents",
+    "llm-router",
+    "model-routing",
+    "semantic-cache",
+    "circuit-breaker"
   ]
 }
