@@ -196,11 +196,54 @@ Or configure in `mcp.json`:
 }
 ```
 
-Exposed MCP tools:
-- `route_agent_step`: Execute full cost-aware routing, semantic cache lookup, circuit-breaker failover, and confidence cascade escalation.
-- `classify_task_complexity`: Score prompt complexity (`0.0–1.0`) and inspect feature breakdown (`reasoning_marker_score`, `code_density_score`, `tool_complexity_score`, `token_volume_score`).
-- `inspect_endpoint_health`: Query 3-state circuit breaker states (`CLOSED`, `OPEN`, `HALF_OPEN`), rolling error rates, HTTP 429 counters, and EMA latency.
-- `check_budget_status`: Inspect workflow and tenant token/USD spend and 80% soft-cap downgrade state.
+### Exposed MCP Tools (`tools/list`) & Detailed Usage Guide
+
+| Tool Name | What is its use? (Purpose) | Key Arguments | Typical Output |
+| :--- | :--- | :--- | :--- |
+| `route_agent_step` | Route an AI agent workflow step across `FAST_LOCAL`, `BALANCED`, and `FRONTIER_REASONING` model tiers using Pareto cost/latency optimization, SimHash semantic caching, circuit-breaker failover, and confidence cascade escalation. | `prompt` (str), `system_prompt` (str), `latency_sla_ms` (float), `max_cost_usd` (float), `min_confidence` (float) | `{"selected_model": "...", "tier": "FAST_LOCAL", "cached": false, "estimated_cost_usd": 0.0001}` |
+| `classify_task_complexity` | Compute deterministic task complexity score (`0.0–1.0`) and recommended model tier without executing model calls. | `prompt` (str), `system_prompt` (str), `tools_schema` (list) | `{"complexity_score": 0.35, "recommended_tier": "FAST_LOCAL", "feature_scores": {...}}` |
+| `inspect_endpoint_health` | Inspect 3-state circuit breaker status (`CLOSED`, `OPEN`, `HALF_OPEN`), rolling error rates, HTTP 429 rate-limit counters, and EMA latency for model endpoints. | `endpoint_id` (optional str) | `{"endpoints": {"fast-llama": {"state": "CLOSED", "error_rate": 0.0, "p95_latency_ms": 42.1}}}` |
+| `check_budget_status` | Query tenant and workflow token/USD budget utilization, remaining allowance, and 80% soft-cap tier downgrade state. | `tenant_id` (str), `workflow_id` (str) | `{"tenant_id": "...", "budget_usd": 100.0, "spent_usd": 14.20, "downgrade_active": false}` |
+| `synapse_rate_limit_status` | Query sliding-window RPM and TPM consumption, ceiling limits, and saturation status for a model endpoint. | `endpoint_id` (str) | `{"endpoint_id": "...", "rpm_utilization": 0.12, "tpm_utilization": 0.08, "saturated": false}` |
+| `synapse_export_aegis_g2` | Export canonical RFC 6962 G2_BUDGET_ROUTING attestation leaf for a routing receipt or simulation parameters. | `cost_usd` (float), `budget_cap_usd` (float), `model_id` (str), `task_prompt` (str) | `{"attestation_leaf": "...", "sha256": "...", "valid": true}` |
+
+#### Tool Usage Examples
+
+##### 1. `route_agent_step` — Intelligent Multi-Model Routing with Cost SLA
+Route an agent's sub-task with strict latency and cost bounds:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "route_agent_step",
+    "arguments": {
+      "prompt": "Extract JSON fields from invoice: invoice_id, amount, due_date.",
+      "latency_sla_ms": 250.0,
+      "max_cost_usd": 0.002,
+      "min_confidence": 0.85
+    }
+  }
+}
+```
+
+##### 2. `classify_task_complexity` — Pre-Execution Task Triage
+Determine whether a task needs an expensive frontier model (Claude 3.5 Sonnet / o1) or can be safely delegated to an ultra-fast local model (Llama-3.1-8B):
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "tools/call",
+  "params": {
+    "name": "classify_task_complexity",
+    "arguments": {
+      "prompt": "Design a formal TLA+ distributed consensus spec with proof of non-blocking atomicity.",
+      "tools_schema": []
+    }
+  }
+}
+```
 
 ---
 
@@ -213,11 +256,13 @@ Exposed MCP tools:
 
 ## Testing
 
-Run the full 61-test suite:
+Run the full 90-test suite:
 
 ```bash
 pytest -v
 ```
+
+All **90 tests** validate Pareto utility routing, SimHash semantic caching, confidence cascade escalation, 3-state circuit breakers, token/USD budget enforcement, rate limiters, RFC 6962 G2 attestation export, and Vercel serverless gateways.
 
 ---
 
@@ -235,10 +280,27 @@ curl -s -X POST https://synapse-router.vercel.app/mcp -H 'Content-Type: applicat
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
 ```
 
-Client config (any Streamable-HTTP-capable MCP client):
+### Client Configuration
 
+#### 1. Claude Code CLI
+```bash
+# Add to current project:
+claude mcp add --transport http synapse-router https://synapse-router.vercel.app/mcp
+
+# Or add globally across all projects:
+claude mcp add --scope user --transport http synapse-router https://synapse-router.vercel.app/mcp
+```
+
+#### 2. Claude Desktop / Cursor / Windsurf (`mcp.json`)
 ```json
-{ "mcpServers": { "synapse-router": { "url": "https://synapse-router.vercel.app/mcp" } } }
+{
+  "mcpServers": {
+    "synapse-router": {
+      "type": "http",
+      "url": "https://synapse-router.vercel.app/mcp"
+    }
+  }
+}
 ```
 
 **Hosted limitations:** All 6 tools are available. Router/cache/budget state is **in-memory and ephemeral** per serverless instance.
