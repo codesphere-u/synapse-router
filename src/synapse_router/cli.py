@@ -478,7 +478,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         prog="synapse-router",
         description="Cost-Aware Multi-Model AI Agent Router, Cascade Escalation & Semantic Cache CLI",
     )
-    sub = parser.add_subparsers(dest="command", required=True)
+    sub = parser.add_subparsers(dest="command", required=False)
 
     demo_p = sub.add_parser("demo", help="Run 20-step multi-agent workflow simulation")
     demo_p.add_argument("--json", action="store_true", help="Emit JSON report")
@@ -505,6 +505,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     http_p.add_argument("--port", type=int, default=8000, help="Port to listen (default: 8000)")
 
     sub.add_parser("mcp", help="Start JSON-RPC 2.0 MCP server over stdio")
+    sub.add_parser("serve-stdio", help="Start JSON-RPC 2.0 MCP server over stdio (alias for mcp)")
 
     args = parser.parse_args(argv)
     if args.command == "demo":
@@ -538,7 +539,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             httpd.server_close()
         return 0
 
-    if args.command == "mcp":  # pragma: no cover
+    if args.command in ("mcp", "serve-stdio") or args.command is None:  # pragma: no cover
         SynapseMCPServer().serve_stdio()
         return 0
     return 1
