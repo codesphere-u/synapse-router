@@ -1,14 +1,20 @@
 # synapse-router
 
 [![CI](https://github.com/codesphere-u/synapse-router/actions/workflows/ci.yml/badge.svg)](https://github.com/codesphere-u/synapse-router/actions/workflows/ci.yml)
+[![Release v1.1.0](https://img.shields.io/badge/release-v1.1.0-blue.svg)](https://github.com/codesphere-u/synapse-router/releases/tag/v1.1.0)
 [![Python 3.10 | 3.11 | 3.12](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue.svg)](https://github.com/codesphere-u/synapse-router)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![MCP Server](https://img.shields.io/badge/MCP-JSON--RPC%202.0-purple.svg)](src/synapse_router/server.py)
-[![Version: 1.1.0](https://img.shields.io/badge/version-1.1.0-blue.svg)](CHANGELOG.md)
-[![Tests: 77 Passed](https://img.shields.io/badge/tests-77%20passed-brightgreen.svg)](tests/)
+[![MCP Spec](https://img.shields.io/badge/MCP-2024--11--05-7c3aed.svg)](https://modelcontextprotocol.io/)
+[![Vercel Deployment](https://img.shields.io/badge/Vercel-Operational-10b981?logo=vercel&logoColor=white)](https://synapse-router.vercel.app/mcp)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-✔%20Connected-10b981?logo=anthropic&logoColor=white)](#connect-to-claude-code--cursor--windsurf)
+[![Glama Gateway](https://img.shields.io/badge/Glama-Verified-38bdf8)](https://glama.ai/mcp)
+[![Smithery Ready](https://img.shields.io/badge/Smithery-Ready-purple)](smithery.yaml)
+[![Tests: 84 Passed](https://img.shields.io/badge/tests-84%20passed-brightgreen.svg)](tests/)
 [![Nexus Aegis Gate: G2](https://img.shields.io/badge/Nexus%20Aegis-G2__BUDGET__ROUTING-teal.svg)](https://github.com/codesphere-u/nexus-aegis)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 **Cost-Aware Multi-Model AI Agent Router, Confidence-Gated Cascade Escalation, 3-State Circuit Breaker & 64-Bit SimHash Semantic Cache Gateway.**
+
+> 🚀 **Live Interactive Developer Portal & Playground:** Visit [`https://synapse-router.vercel.app`](https://synapse-router.vercel.app) in your web browser to test routing live, inspect schemas, and copy 1-click configurations for Claude Code, Cursor, Windsurf, and Claude Desktop.
 
 ---
 
@@ -245,14 +251,19 @@ Determine whether a task needs an expensive frontier model (Claude 3.5 Sonnet / 
 }
 ```
 
-### Exposed MCP Resources & Prompts
+### Exposed MCP Resources (`resources/list`, `resources/read`)
 
-- **Resources (`resources/list`, `resources/read`)**:
-  - `synapse://endpoints/catalog`: Live registry of configured model endpoints across tiers (`FAST_LOCAL`, `BALANCED`, `FRONTIER_REASONING`) with pricing and latency SLAs.
-  - `synapse://health/summary`: Real-time circuit breaker states, sliding-window rate limiters, and tenant spend utilization.
-- **Prompts (`prompts/list`, `prompts/get`)**:
-  - `route-task-advisor`: Guided prompt to analyze user task complexity, token volume, and recommend the optimal model tier and fallback cascade.
-  - `budget-allocation-planner`: Prompt template to configure sliding-window token and USD budgets with 80% soft-cap degradation rules.
+| Resource URI | MIME Type | Purpose / Content Description |
+| :--- | :--- | :--- |
+| `synapse://endpoints/catalog` | `application/json` | Live catalog of configured model endpoints across tiers (`FAST_LOCAL`, `BALANCED`, `FRONTIER_REASONING`) with latency SLAs and token pricing. |
+| `synapse://health/summary` | `application/json` | Real-time circuit breaker states, sliding-window rate limit counters, and budget spend utilization across all endpoints. |
+
+### Exposed MCP Prompts (`prompts/list`, `prompts/get`)
+
+| Prompt Name | Purpose / Use Case | Required Arguments | Workflow Output |
+| :--- | :--- | :--- | :--- |
+| `route-task-advisor` | Guides an LLM agent to analyze task complexity, token requirements, and recommend the optimal model tier and fallback cascade. | `prompt` (string) | Pre-formatted advisory prompt instructing the model to estimate complexity, recommend tiers, and outline latency SLAs. |
+| `budget-allocation-planner` | Guides an LLM agent to design budget limits with 80% soft-cap degradation rules for multi-tenant swarms. | `monthly_budget_usd` (string) | Pre-formatted allocation prompt breaking down spend tiers, cache targets, and rate limiting thresholds. |
 
 ---
 
@@ -291,7 +302,7 @@ curl -s -X POST https://synapse-router.vercel.app/mcp -H 'Content-Type: applicat
 
 ### Client Configuration
 
-#### 1. Claude Code CLI
+#### 1. Claude Code CLI (Recommended)
 ```bash
 # Add to current project:
 claude mcp add --transport http synapse-router https://synapse-router.vercel.app/mcp
@@ -307,6 +318,28 @@ claude mcp add --scope user --transport http synapse-router https://synapse-rout
     "synapse-router": {
       "type": "http",
       "url": "https://synapse-router.vercel.app/mcp"
+    }
+  }
+}
+```
+
+#### 3. Smithery Registry (1-Click Install)
+```bash
+npx -y @smithery/cli install @codesphere-u/synapse-router --client claude
+```
+
+#### 4. Local Stdio via `uvx`
+```json
+{
+  "mcpServers": {
+    "synapse-router": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/codesphere-u/synapse-router.git",
+        "synapse-router",
+        "mcp"
+      ]
     }
   }
 }

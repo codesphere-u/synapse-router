@@ -10,10 +10,12 @@
   "url": "https://synapse-router.vercel.app/mcp",
   "endpoints": {
     "streamable_http": "https://synapse-router.vercel.app/mcp",
+    "sse": "https://synapse-router.vercel.app/sse",
     "health": "https://synapse-router.vercel.app/health"
   },
   "transport": [
     "streamable-http",
+    "sse",
     "stdio"
   ],
   "keywords": [
