@@ -59,3 +59,7 @@ where = ["src"]
 testpaths = ["tests"]
 pythonpath = ["src"]
 addopts = "-q"
+
+[tool.vercel]
+entrypoint = "api.index:app"
+
