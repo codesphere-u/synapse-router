@@ -1,0 +1,23 @@
+{
+  "$schema": "https://glama.ai/mcp/schemas/server.json",
+  "maintainers": [
+    "codesphere-u"
+  ],
+  "name": "synapse-router",
+  "description": "Dynamic Semantic Routing Engine and Multi-Tier LLM Cost Optimization Gateway MCP Server.",
+  "type": "mcp_server",
+  "status": "production",
+  "transport": [
+    "http",
+    "sse",
+    "stdio"
+  ],
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "semantic-router",
+    "cost-optimizer",
+    "circuit-breaker",
+    "llm-gateway"
+  ]
+}

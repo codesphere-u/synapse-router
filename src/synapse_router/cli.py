@@ -500,6 +500,10 @@ def main(argv: Optional[List[str]] = None) -> int:
     aegis_p.add_argument("--prompt", type=str, default="", help="Task prompt")
     aegis_p.add_argument("--json", action="store_true", default=True, help="Emit JSON output")
 
+    http_p = sub.add_parser("serve-http", help="Start HTTP/SSE MCP server for cloud hosting (Glama.ai, Docker)")
+    http_p.add_argument("--host", default="0.0.0.0", help="Host interface (default: 0.0.0.0)")
+    http_p.add_argument("--port", type=int, default=8000, help="Port to listen (default: 8000)")
+
     sub.add_parser("mcp", help="Start JSON-RPC 2.0 MCP server over stdio")
 
     args = parser.parse_args(argv)
@@ -523,6 +527,17 @@ def main(argv: Optional[List[str]] = None) -> int:
             as_json=args.json,
         )
         return 0
+    if args.command == "serve-http":  # pragma: no cover
+        from synapse_router.http_server import run_http_server
+        server = SynapseMCPServer()
+        httpd = run_http_server(server, host=args.host, port=args.port)
+        print(f"SynapseRouter HTTP/SSE server running on http://{args.host}:{args.port}")
+        try:
+            httpd.serve_forever()
+        except KeyboardInterrupt:
+            httpd.server_close()
+        return 0
+
     if args.command == "mcp":  # pragma: no cover
         SynapseMCPServer().serve_stdio()
         return 0
