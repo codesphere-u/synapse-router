@@ -4,14 +4,13 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-import pytest
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 API_DIR = ROOT_DIR / "api"
 if str(API_DIR) not in sys.path:
     sys.path.insert(0, str(API_DIR))
 
-from portal import render_developer_portal
+from portal import render_developer_portal  # noqa: E402
 
 
 def test_portal_html_render():

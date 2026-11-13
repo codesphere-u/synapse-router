@@ -2,13 +2,17 @@
 
 from __future__ import annotations
 
-import json
 import pytest
 
-from synapse_router.aegis_bridge import canonical_json_bytes, create_aegis_g2_leaf, create_aegis_g2_payload, hash_leaf_bytes
-from synapse_router.cli import main, run_export_aegis, run_rate_status
+from synapse_router.aegis_bridge import (
+    canonical_json_bytes,
+    create_aegis_g2_leaf,
+    create_aegis_g2_payload,
+    hash_leaf_bytes,
+)
 from synapse_router.classifier import AgentStepRequest
-from synapse_router.rate_limiter import RateGovernor, RateLimitConfig, RateLimitDecision
+from synapse_router.cli import main
+from synapse_router.rate_limiter import RateGovernor
 from synapse_router.router import SynapseRouter
 from synapse_router.server import SynapseMCPServer
 

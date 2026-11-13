@@ -6,7 +6,7 @@ import math
 import re
 from dataclasses import dataclass, field
 from enum import IntEnum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class Tier(IntEnum):
@@ -27,10 +27,10 @@ class AgentStepRequest:
 
     prompt: str
     system_prompt: str = ""
-    tools_schema: List[Dict[str, Any]] = field(default_factory=list)
-    require_json_schema: Optional[Dict[str, Any]] = None
-    latency_sla_ms: Optional[float] = None
-    max_cost_usd: Optional[float] = None
+    tools_schema: list[dict[str, Any]] = field(default_factory=list)
+    require_json_schema: dict[str, Any] | None = None
+    latency_sla_ms: float | None = None
+    max_cost_usd: float | None = None
     min_confidence: float = 0.78
     estimated_output_tokens: int = 256
     tenant_id: str = "default-tenant"
@@ -51,21 +51,21 @@ class ComplexityAnalysis:
     code_density_score: float
     tool_complexity_score: float
     token_volume_score: float
-    matched_markers: List[str]
+    matched_markers: list[str]
 
 
-_REASONING_PATTERNS: List[tuple[str, re.Pattern[str], float]] = [
-    ("formal_proof", re.compile(r"\b(prove|theorem|lemma|induction|contradiction|invariant)\b", re.I), 0.34),
-    ("system_architecture", re.compile(r"\b(architect|architecture|trade-?offs?|distributed|consensus|raft|paxos|byzantine)\b", re.I), 0.30),
-    ("multi_step_reasoning", re.compile(r"\b(step-by-step|chain of thought|decompose|root cause|synthesize|counterexample|formalize)\b", re.I), 0.28),
-    ("optimization_math", re.compile(r"\b(optimize|dynamic programming|np-hard|complexity|asymptotic|hessian|jacobian|eigenvalue|convex|pareto)\b", re.I), 0.30),
-    ("security_audit", re.compile(r"\b(vulnerability|exploit|race condition|deadlock|cryptographic|zero-day|threat model)\b", re.I), 0.28),
-    ("analytical_comparison", re.compile(r"\b(compare|evaluate|analyze|refactor|debug|diagnose|investigate)\b", re.I), 0.28),
+_REASONING_PATTERNS: list[tuple[str, re.Pattern[str], float]] = [
+    ("formal_proof", re.compile(r"\b(prove|theorem|lemma|induction|contradiction|invariant)\b", re.IGNORECASE), 0.34),
+    ("system_architecture", re.compile(r"\b(architect|architecture|trade-?offs?|distributed|consensus|raft|paxos|byzantine)\b", re.IGNORECASE), 0.30),
+    ("multi_step_reasoning", re.compile(r"\b(step-by-step|chain of thought|decompose|root cause|synthesize|counterexample|formalize)\b", re.IGNORECASE), 0.28),
+    ("optimization_math", re.compile(r"\b(optimize|dynamic programming|np-hard|complexity|asymptotic|hessian|jacobian|eigenvalue|convex|pareto)\b", re.IGNORECASE), 0.30),
+    ("security_audit", re.compile(r"\b(vulnerability|exploit|race condition|deadlock|cryptographic|zero-day|threat model)\b", re.IGNORECASE), 0.28),
+    ("analytical_comparison", re.compile(r"\b(compare|evaluate|analyze|refactor|debug|diagnose|investigate)\b", re.IGNORECASE), 0.28),
 ]
 
-_TRIVIAL_PATTERNS: List[re.Pattern[str]] = [
-    re.compile(r"^\s*(classify|extract|format|summarize|translate|normalize|tag|route|parse)\b", re.I),
-    re.compile(r"\b(yes or no|true or false|sentiment|intent classification|one word|json only)\b", re.I),
+_TRIVIAL_PATTERNS: list[re.Pattern[str]] = [
+    re.compile(r"^\s*(classify|extract|format|summarize|translate|normalize|tag|route|parse)\b", re.IGNORECASE),
+    re.compile(r"\b(yes or no|true or false|sentiment|intent classification|one word|json only)\b", re.IGNORECASE),
 ]
 
 _CODE_SYNTAX_RE = re.compile(
@@ -106,7 +106,7 @@ class TaskComplexityClassifier:
             return 0
         words = len(text.split())
         chars = len(text)
-        return max(1, int(round(0.6 * (chars / 4.0) + 0.4 * (words * 1.3))))
+        return max(1, round(0.6 * (chars / 4.0) + 0.4 * (words * 1.3)))
 
     def analyze(self, request: AgentStepRequest) -> ComplexityAnalysis:
         """Compute normalized complexity score and assign a recommended model Tier."""
@@ -118,7 +118,7 @@ class TaskComplexityClassifier:
             input_tokens += self.estimate_tokens(str(request.require_json_schema))
 
         # 1. Reasoning & multi-step planning markers
-        matched_markers: List[str] = []
+        matched_markers: list[str] = []
         raw_reasoning = 0.0
         for name, pattern, weight in _REASONING_PATTERNS:
             matches = pattern.findall(combined_text)

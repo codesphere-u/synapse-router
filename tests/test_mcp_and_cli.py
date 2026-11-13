@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import pytest
 
 from synapse_router.cli import main, run_benchmark, run_demo

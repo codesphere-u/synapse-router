@@ -10,7 +10,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from synapse_router.budget import BudgetEvaluation
 from synapse_router.router import RoutingDecisionReceipt
@@ -42,7 +42,7 @@ def hash_leaf_bytes(data: bytes) -> str:
 
 
 def create_aegis_g2_payload(
-    receipt_or_eval: Optional[Union[RoutingDecisionReceipt, BudgetEvaluation, Dict[str, Any]]] = None,
+    receipt_or_eval: RoutingDecisionReceipt | BudgetEvaluation | dict[str, Any] | None = None,
     task_id: str = "synapse_routing",
     task_prompt: str = "",
     cost_usd: float = 0.0,
@@ -50,8 +50,8 @@ def create_aegis_g2_payload(
     tokens_used: int = 0,
     token_budget_cap: int = 120_000,
     model_id: str = "claude-3-5-sonnet",
-    is_trivial_override: Optional[bool] = None,
-) -> Dict[str, Any]:
+    is_trivial_override: bool | None = None,
+) -> dict[str, Any]:
     """
     Transform a SynapseRouter receipt or budget evaluation into the canonical
     Nexus Aegis G2_BUDGET_ROUTING payload format.
@@ -95,7 +95,7 @@ def create_aegis_g2_payload(
     if is_trivial_override is not None:
         is_trivial = is_trivial_override
 
-    violations: List[str] = []
+    violations: list[str] = []
     utilization = round(actual_cost / max(0.0001, actual_cap), 4)
 
     if actual_cost > actual_cap:
@@ -140,7 +140,7 @@ def create_aegis_g2_payload(
 
 
 def create_aegis_g2_leaf(
-    receipt_or_eval: Optional[Union[RoutingDecisionReceipt, BudgetEvaluation, Dict[str, Any]]] = None,
+    receipt_or_eval: RoutingDecisionReceipt | BudgetEvaluation | dict[str, Any] | None = None,
     task_id: str = "synapse_routing",
     task_prompt: str = "",
     cost_usd: float = 0.0,
@@ -148,8 +148,8 @@ def create_aegis_g2_leaf(
     tokens_used: int = 0,
     token_budget_cap: int = 120_000,
     model_id: str = "claude-3-5-sonnet",
-    is_trivial_override: Optional[bool] = None,
-) -> Dict[str, Any]:
+    is_trivial_override: bool | None = None,
+) -> dict[str, Any]:
     """
     Return the full G2 attestation package containing canonical payload,
     leaf hash, and RFC 6962 domain separation metadata.

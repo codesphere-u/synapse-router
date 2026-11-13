@@ -6,17 +6,22 @@ import argparse
 import json
 import statistics
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from synapse_router.budget import TokenBudgetGovernor
 from synapse_router.cache import SemanticPromptCache
 from synapse_router.classifier import AgentStepRequest, Tier
 from synapse_router.health import EndpointHealthRegistry
-from synapse_router.router import ModelEndpoint, ModelInvocationResult, RoutingDecisionReceipt, SynapseRouter
+from synapse_router.router import (
+    ModelEndpoint,
+    ModelInvocationResult,
+    RoutingDecisionReceipt,
+    SynapseRouter,
+)
 from synapse_router.server import SynapseMCPServer
 
 
-def _build_20_step_demo_workflow() -> List[AgentStepRequest]:
+def _build_20_step_demo_workflow() -> list[AgentStepRequest]:
     """Construct a realistic 20-step LangGraph/MCP multi-agent customer & code triage workflow."""
     json_schema = {
         "type": "object",
@@ -162,7 +167,7 @@ def _build_20_step_demo_workflow() -> List[AgentStepRequest]:
     ]
 
 
-def run_demo(as_json: bool = False) -> Dict[str, Any]:
+def run_demo(as_json: bool = False) -> dict[str, Any]:
     """Execute the 20-step multi-agent workflow demo with injected 429s, cascades, and cache hits."""
     router = SynapseRouter(
         health_registry=EndpointHealthRegistry(failure_threshold=2, recovery_timeout_s=30.0),
@@ -211,7 +216,7 @@ def run_demo(as_json: bool = False) -> Dict[str, Any]:
             )
         return router._default_deterministic_executor(endpoint, request, hop_index)
 
-    receipts: List[RoutingDecisionReceipt] = []
+    receipts: list[RoutingDecisionReceipt] = []
     for step in steps:
         receipt = router.execute_cascade(step, executor=demo_executor)
         receipts.append(receipt)
@@ -274,7 +279,7 @@ def run_demo(as_json: bool = False) -> Dict[str, Any]:
     return summary
 
 
-def run_benchmark(num_requests: int = 500, as_json: bool = False) -> Dict[str, Any]:
+def run_benchmark(num_requests: int = 500, as_json: bool = False) -> dict[str, Any]:
     """Run a 500-request synthetic multi-agent workload across 6 model endpoints."""
     router = SynapseRouter(
         health_registry=EndpointHealthRegistry(failure_threshold=3, recovery_timeout_s=10.0),
@@ -287,8 +292,8 @@ def run_benchmark(num_requests: int = 500, as_json: bool = False) -> Dict[str, A
     )
 
     templates = _build_20_step_demo_workflow()
-    routing_latencies_us: List[float] = []
-    receipts: List[RoutingDecisionReceipt] = []
+    routing_latencies_us: list[float] = []
+    receipts: list[RoutingDecisionReceipt] = []
     injected_faults = 0
     recovered_faults = 0
     cascade_escalations = 0
@@ -363,7 +368,7 @@ def run_benchmark(num_requests: int = 500, as_json: bool = False) -> Dict[str, A
 
     sorted_lat = sorted(routing_latencies_us)
     p50_us = round(statistics.median(sorted_lat), 2)
-    p95_idx = min(len(sorted_lat) - 1, int(round(0.95 * (len(sorted_lat) - 1))))
+    p95_idx = min(len(sorted_lat) - 1, round(0.95 * (len(sorted_lat) - 1)))
     p95_us = round(sorted_lat[p95_idx], 2)
 
     total_cost = round(sum(r.total_cost_usd for r in receipts), 6)
@@ -371,7 +376,7 @@ def run_benchmark(num_requests: int = 500, as_json: bool = False) -> Dict[str, A
     saved_cost = round(baseline_cost - total_cost, 6)
     cost_reduction_pct = round((saved_cost / max(1e-9, baseline_cost)) * 100.0, 2)
 
-    tier_counts: Dict[str, int] = {t.name: 0 for t in Tier}
+    tier_counts: dict[str, int] = {t.name: 0 for t in Tier}
     for r in receipts:
         tier_counts[r.final_tier] = tier_counts.get(r.final_tier, 0) + 1
 
@@ -381,7 +386,7 @@ def run_benchmark(num_requests: int = 500, as_json: bool = False) -> Dict[str, A
         (recovered_faults / max(1, injected_faults)) * 100.0, 2
     ) if injected_faults > 0 else 100.0
 
-    report = {
+    report: dict[str, Any] = {
         "requests_evaluated": num_requests,
         "endpoints_registered": len(router.endpoints),
         "routing_latency_p50_us": p50_us,
@@ -421,7 +426,7 @@ def run_benchmark(num_requests: int = 500, as_json: bool = False) -> Dict[str, A
     return report
 
 
-def run_rate_status(endpoint: Optional[str] = None, as_json: bool = False) -> Dict[str, Any]:
+def run_rate_status(endpoint: str | None = None, as_json: bool = False) -> dict[str, Any]:
     """Query sliding-window RPM and TPM consumption across registered endpoints."""
     router = SynapseRouter()
     endpoints = [endpoint] if endpoint else sorted(router.endpoints.keys())
@@ -452,7 +457,7 @@ def run_export_aegis(
     task_id: str = "synapse_routing_task",
     task_prompt: str = "",
     as_json: bool = True,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Generate canonical Nexus Aegis G2 attestation leaf with RFC 6962 SHA-256 leaf digest."""
     from synapse_router.aegis_bridge import create_aegis_g2_leaf
 
@@ -473,7 +478,7 @@ def run_export_aegis(
     return leaf
 
 
-def main(argv: Optional[List[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="synapse-router",
         description="Cost-Aware Multi-Model AI Agent Router, Cascade Escalation & Semantic Cache CLI",

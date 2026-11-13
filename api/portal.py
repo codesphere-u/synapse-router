@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import html
 import json
-from typing import Any, Dict, List
+from typing import Any
 
 
 def render_developer_portal(
@@ -18,10 +18,10 @@ def render_developer_portal(
     tagline: str,
     endpoint_url: str,
     github_url: str,
-    tools: List[Dict[str, Any]],
-    resources: List[Dict[str, Any]],
-    prompts: List[Dict[str, Any]],
-    sample_tool_call: Dict[str, Any],
+    tools: list[dict[str, Any]],
+    resources: list[dict[str, Any]],
+    prompts: list[dict[str, Any]],
+    sample_tool_call: dict[str, Any],
 ) -> str:
     """Generate a self-contained, highly interactive HTML router dashboard."""
 
@@ -45,7 +45,7 @@ def render_developer_portal(
         req = set(t.get("inputSchema", {}).get("required", []))
         param_badges = "".join(
             f'<span class="badge param {"req" if p in req else "opt"}">{html.escape(p)}{"*" if p in req else ""}</span>'
-            for p in props.keys()
+            for p in props
         )
         tool_cards.append(
             f"""

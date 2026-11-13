@@ -3,21 +3,18 @@
 from __future__ import annotations
 
 import json
+
 import pytest
 
-from synapse_router.budget import BudgetExceededError, TokenBudgetGovernor
+from synapse_router.budget import TokenBudgetGovernor
 from synapse_router.cache import (
-    SemanticPromptCache,
-    compute_context_fingerprint,
     compute_simhash64,
     hamming_distance64,
 )
-from synapse_router.classifier import AgentStepRequest, TaskComplexityClassifier, Tier
-from synapse_router.health import CircuitState, EndpointHealthRegistry
+from synapse_router.classifier import AgentStepRequest, Tier
 from synapse_router.router import (
     ModelEndpoint,
     ModelInvocationResult,
-    NoHealthyEndpointError,
     ResponseValidator,
     SynapseRouter,
 )

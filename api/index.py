@@ -14,12 +14,13 @@ from __future__ import annotations
 import copy
 import json
 import os
-import time
-from collections import defaultdict, deque
-from pathlib import Path
 import sys
-from typing import Any, Dict, List, Optional
+import time
 import uuid
+from collections import defaultdict, deque
+from collections.abc import AsyncIterator
+from pathlib import Path
+from typing import Any
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 SRC_DIR = ROOT_DIR / "src"
@@ -27,11 +28,12 @@ for _p in (str(SRC_DIR), str(ROOT_DIR)):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
-from fastapi import FastAPI, Request, Response
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
+from fastapi import FastAPI, Request, Response  # noqa: E402
+from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse  # noqa: E402
 
-from synapse_router.server import SynapseMCPServer
+from synapse_router.server import SynapseMCPServer  # noqa: E402
+
 try:
     from portal import render_developer_portal
 except ImportError:
@@ -44,10 +46,10 @@ MAX_BODY_BYTES = 1_000_000
 # Best-effort per-IP sliding-window rate limit. State is per serverless instance, so it
 # bounds abuse of a warm instance but is not a global quota (use Vercel Firewall for that).
 RATE_LIMIT_PER_MIN = int(os.environ.get("MCP_RATE_LIMIT_PER_MIN", "60"))
-_hits: Dict[str, deque] = defaultdict(deque)
+_hits: dict[str, deque] = defaultdict(deque)
 
 
-def _rate_limited(request: Request) -> Optional[int]:
+def _rate_limited(request: Request) -> int | None:
     """Return Retry-After seconds when the caller exceeded the limit, else None."""
     if RATE_LIMIT_PER_MIN <= 0:
         return None
@@ -66,9 +68,9 @@ def _rate_limited(request: Request) -> Optional[int]:
     return None
 
 # Tools hidden and refused on the public hosted deployment (filesystem / process access).
-HOSTED_BLOCKED_TOOLS = frozenset([])
+HOSTED_BLOCKED_TOOLS: frozenset[str] = frozenset()
 # Per-tool arguments that are refused (and stripped from the advertised schema) when hosted.
-HOSTED_FORBIDDEN_ARGS: Dict[str, List[str]] = {}
+HOSTED_FORBIDDEN_ARGS: dict[str, list[str]] = {}
 
 PARSE_ERROR = -32700
 INVALID_REQUEST = -32600
@@ -105,7 +107,7 @@ app.add_middleware(
 )
 
 
-def _resolve_request_id(header_value: Optional[str]) -> str:
+def _resolve_request_id(header_value: str | None) -> str:
     """Validate incoming X-Request-ID or mint a fresh hex trace token."""
     candidate = (header_value or "").strip()
     if (
@@ -136,7 +138,7 @@ def _error(code: int, message: str, req_id: Any = None, status: int = 200) -> JS
     )
 
 
-def _sanitize_tools(tools: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def _sanitize_tools(tools: list[dict[str, Any]]) -> list[dict[str, Any]]:
     visible = []
     for tool in tools:
         name = tool.get("name")
@@ -144,15 +146,16 @@ def _sanitize_tools(tools: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             continue
         tool = copy.deepcopy(tool)
         schema = tool.get("inputSchema") or {}
-        for arg in HOSTED_FORBIDDEN_ARGS.get(name, []):
-            schema.get("properties", {}).pop(arg, None)
-            if arg in schema.get("required", []):
-                schema["required"].remove(arg)
+        if isinstance(name, str) and name in HOSTED_FORBIDDEN_ARGS:
+            for arg in HOSTED_FORBIDDEN_ARGS[name]:
+                schema.get("properties", {}).pop(arg, None)
+                if arg in schema.get("required", []):
+                    schema["required"].remove(arg)
         visible.append(tool)
     return visible
 
 
-def _dispatch(message: Any) -> Optional[Dict[str, Any]]:
+def _dispatch(message: Any) -> dict[str, Any] | None:
     """Process one JSON-RPC message. Returns None for notifications."""
     if not isinstance(message, dict) or message.get("jsonrpc") != "2.0" or "method" not in message:
         return {
@@ -175,8 +178,8 @@ def _dispatch(message: Any) -> Optional[Dict[str, Any]]:
         refused = None
         if name in HOSTED_BLOCKED_TOOLS:
             refused = f"Tool '{name}' is disabled on the hosted deployment (filesystem/process access). Install locally via stdio to use it."
-        else:
-            for arg in HOSTED_FORBIDDEN_ARGS.get(name, []):
+        elif isinstance(name, str) and name in HOSTED_FORBIDDEN_ARGS:
+            for arg in HOSTED_FORBIDDEN_ARGS[name]:
                 if isinstance(args, dict) and arg in args:
                     refused = f"Argument '{arg}' is disabled on the hosted deployment. Pass the content inline instead."
                     break
@@ -204,11 +207,11 @@ def _dispatch(message: Any) -> Optional[Dict[str, Any]]:
     return response
 
 
-@app.get("/")
-@app.get("/health")
-@app.get("/healthz")
-@app.get("/api/health")
-async def health_check(request: Request):
+@app.get("/", response_model=None)
+@app.get("/health", response_model=None)
+@app.get("/healthz", response_model=None)
+@app.get("/api/health", response_model=None)
+async def health_check(request: Request) -> Response | dict[str, Any]:
     accept = request.headers.get("accept", "")
     if "text/html" in accept:
         tools = _sanitize_tools(mcp_engine.handle_request({"jsonrpc": "2.0", "id": 1, "method": "tools/list"}).get("result", {}).get("tools", []))
@@ -247,8 +250,8 @@ async def health_head() -> Response:
     return Response(status_code=200, media_type="application/json")
 
 
-@app.get("/mcp")
-async def mcp_get(request: Request):
+@app.get("/mcp", response_model=None)
+async def mcp_get(request: Request) -> Response | dict[str, Any]:
     accept = request.headers.get("accept", "")
     if "text/event-stream" in accept:
         return await sse_legacy(request)
@@ -258,11 +261,11 @@ async def mcp_get(request: Request):
 
 
 @app.get("/sse")
-async def sse_legacy(request: Request):
+async def sse_legacy(request: Request) -> StreamingResponse:
     """Legacy discovery stream. Responses are returned inline on POST /mcp (Streamable HTTP)."""
     session_id = str(uuid.uuid4())
 
-    async def event_generator():
+    async def event_generator() -> AsyncIterator[str]:
         yield f"event: endpoint\ndata: /messages?session_id={session_id}\n\n"
         yield f"event: ping\ndata: {json.dumps({'sessionId': session_id})}\n\n"
 
@@ -276,7 +279,7 @@ async def sse_legacy(request: Request):
 @app.post("/mcp")
 @app.post("/messages")
 @app.post("/")
-async def handle_jsonrpc(request: Request):
+async def handle_jsonrpc(request: Request) -> Response:
     retry = _rate_limited(request)
     if retry is not None:
         resp = _error(-32000, "Rate limit exceeded. Slow down or self-host.", status=429)

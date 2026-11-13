@@ -5,14 +5,13 @@ from __future__ import annotations
 import json
 import sys
 from dataclasses import asdict
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from synapse_router.budget import BudgetExceededError
 from synapse_router.classifier import AgentStepRequest
 from synapse_router.router import NoHealthyEndpointError, SynapseRouter
 
-
-MCP_TOOLS_SPEC: List[Dict[str, Any]] = [
+MCP_TOOLS_SPEC: list[dict[str, Any]] = [
     {
         "name": "route_agent_step",
         "description": (
@@ -121,7 +120,7 @@ MCP_TOOLS_SPEC: List[Dict[str, Any]] = [
 ]
 
 
-MCP_RESOURCES_SPEC: List[Dict[str, Any]] = [
+MCP_RESOURCES_SPEC: list[dict[str, Any]] = [
     {
         "uri": "synapse://endpoints/catalog",
         "name": "Model Endpoints & Routing Tiers Catalog",
@@ -136,7 +135,7 @@ MCP_RESOURCES_SPEC: List[Dict[str, Any]] = [
     },
 ]
 
-MCP_PROMPTS_SPEC: List[Dict[str, Any]] = [
+MCP_PROMPTS_SPEC: list[dict[str, Any]] = [
     {
         "name": "route-task-advisor",
         "description": "Evaluate prompt complexity and recommend the optimal model tier (FAST_LOCAL vs BALANCED vs FRONTIER_REASONING).",
@@ -175,16 +174,16 @@ MCP_PROMPTS_SPEC: List[Dict[str, Any]] = [
 class SynapseMCPServer:
     """Stateless/Stateful JSON-RPC 2.0 MCP Server wrapping a SynapseRouter instance."""
 
-    def __init__(self, router: Optional[SynapseRouter] = None) -> None:
+    def __init__(self, router: SynapseRouter | None = None) -> None:
         self.router = router or SynapseRouter()
 
-    def get_resource_definitions(self) -> List[Dict[str, Any]]:
+    def get_resource_definitions(self) -> list[dict[str, Any]]:
         return list(MCP_RESOURCES_SPEC)
 
-    def get_prompt_definitions(self) -> List[Dict[str, Any]]:
+    def get_prompt_definitions(self) -> list[dict[str, Any]]:
         return list(MCP_PROMPTS_SPEC)
 
-    def _read_resource(self, uri: str) -> Dict[str, Any]:
+    def _read_resource(self, uri: str) -> dict[str, Any]:
         if uri == "synapse://endpoints/catalog":
             endpoints_info = []
             for ep_id, ep in sorted(self.router.endpoints.items()):
@@ -229,7 +228,7 @@ class SynapseMCPServer:
             }
         raise KeyError(f"Unknown resource URI: {uri}")
 
-    def _get_prompt(self, name: str, arguments: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    def _get_prompt(self, name: str, arguments: dict[str, Any] | None) -> dict[str, Any]:
         args = arguments or {}
         if name == "route-task-advisor":
             task_prompt = args.get("task_prompt", "")
@@ -276,7 +275,7 @@ class SynapseMCPServer:
             }
         raise KeyError(f"Unknown prompt: {name}")
 
-    def handle_request(self, request: Dict[str, Any]) -> Dict[str, Any]:
+    def handle_request(self, request: dict[str, Any]) -> dict[str, Any]:
         """Process a single JSON-RPC 2.0 request dictionary and return a JSON-RPC 2.0 response."""
         req_id = request.get("id")
         if request.get("jsonrpc") != "2.0" or "method" not in request:
@@ -349,10 +348,10 @@ class SynapseMCPServer:
             return self._error(req_id, -32601, f"Method not found: {method}")
         except (BudgetExceededError, NoHealthyEndpointError, ValueError) as exc:
             return self._error(req_id, -32000, str(exc))
-        except Exception as exc:  # pragma: no cover
+        except Exception as exc:  # noqa: BLE001  # pragma: no cover
             return self._error(req_id, -32603, f"Internal error: {exc}")
 
-    def _dispatch_tool(self, tool_name: Optional[str], args: Dict[str, Any]) -> Dict[str, Any]:
+    def _dispatch_tool(self, tool_name: str | None, args: dict[str, Any]) -> dict[str, Any]:
         if tool_name == "route_agent_step":
             if "prompt" not in args or not isinstance(args["prompt"], str):
                 raise ValueError("Missing required string parameter 'prompt'")
@@ -396,7 +395,7 @@ class SynapseMCPServer:
                 out = asdict(snap)
                 out["state"] = snap.state.value
                 return out
-            endpoints_out: Dict[str, Any] = {}
+            endpoints_out: dict[str, Any] = {}
             for registered_id in sorted(self.router.endpoints.keys()):
                 snap = self.router.health.snapshot(registered_id)
                 item = asdict(snap)
@@ -428,11 +427,11 @@ class SynapseMCPServer:
         raise ValueError(f"Unknown MCP tool: {tool_name}")
 
     @staticmethod
-    def _ok(req_id: Any, result: Dict[str, Any]) -> Dict[str, Any]:
+    def _ok(req_id: Any, result: dict[str, Any]) -> dict[str, Any]:
         return {"jsonrpc": "2.0", "id": req_id, "result": result}
 
     @staticmethod
-    def _error(req_id: Any, code: int, message: str) -> Dict[str, Any]:
+    def _error(req_id: Any, code: int, message: str) -> dict[str, Any]:
         return {"jsonrpc": "2.0", "id": req_id, "error": {"code": code, "message": message}}
 
     def serve_stdio(self) -> None:  # pragma: no cover

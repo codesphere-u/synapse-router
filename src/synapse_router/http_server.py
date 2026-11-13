@@ -8,15 +8,17 @@ on platforms such as Glama.ai, Fly.io, Cloudflare, and Docker containers.
 from __future__ import annotations
 
 import json
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import logging
-from typing import TYPE_CHECKING
 import uuid
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from synapse_router.server import SynapseMCPServer
 
 logger = logging.getLogger("synapse_router.http_server")
+
+MAX_BODY_BYTES = 1_048_576
 
 
 class SynapseHTTPHandler(BaseHTTPRequestHandler):
@@ -26,13 +28,24 @@ class SynapseHTTPHandler(BaseHTTPRequestHandler):
 
     def do_OPTIONS(self) -> None:
         self.send_response(204)
-        self._send_cors_headers()
+        self._send_common_headers()
+        self.end_headers()
+
+    def do_HEAD(self) -> None:
+        path = self.path.split("?")[0]
+        if path in ("/health", "/healthz", "/", "/info"):
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self._send_common_headers()
+            self.end_headers()
+            return
+        self.send_response(404)
         self.end_headers()
 
     def do_GET(self) -> None:
         path = self.path.split("?")[0]
 
-        if path in ("/health", "/", "/info"):
+        if path in ("/health", "/healthz", "/", "/info"):
             body = json.dumps(
                 {
                     "status": "healthy",
@@ -45,7 +58,7 @@ class SynapseHTTPHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.send_header("Content-Length", str(len(body)))
-            self._send_cors_headers()
+            self._send_common_headers()
             self.end_headers()
             self.wfile.write(body)
             return
@@ -56,10 +69,10 @@ class SynapseHTTPHandler(BaseHTTPRequestHandler):
             self.send_header("Content-Type", "text/event-stream")
             self.send_header("Cache-Control", "no-cache")
             self.send_header("Connection", "keep-alive")
-            self._send_cors_headers()
+            self._send_common_headers()
             self.end_headers()
 
-            endpoint_msg = f"event: endpoint\ndata: /messages?session_id={session_id}\n\n".encode("utf-8")
+            endpoint_msg = f"event: endpoint\ndata: /messages?session_id={session_id}\n\n".encode()
             self.wfile.write(endpoint_msg)
             self.wfile.flush()
             return
@@ -68,15 +81,22 @@ class SynapseHTTPHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_POST(self) -> None:
-        content_length = int(self.headers.get("Content-Length", 0))
-        if content_length == 0:
+        try:
+            content_length = int(self.headers.get("Content-Length", 0))
+        except ValueError:
+            self._send_error(400, "Invalid Content-Length header.")
+            return
+        if content_length <= 0:
             self._send_error(400, "Empty request body.")
+            return
+        if content_length > MAX_BODY_BYTES:
+            self._send_error(413, "Request body too large.")
             return
 
         try:
             raw_data = self.rfile.read(content_length).decode("utf-8")
             payload = json.loads(raw_data)
-        except Exception as e:
+        except (OSError, UnicodeDecodeError, ValueError) as e:
             self._send_error(400, f"Malformed JSON: {e}")
             return
 
@@ -97,22 +117,25 @@ class SynapseHTTPHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(response_body)))
-        self._send_cors_headers()
+        self._send_common_headers()
         self.end_headers()
         if response_body:
             self.wfile.write(response_body)
 
-    def _send_cors_headers(self) -> None:
+    def _send_common_headers(self) -> None:
         self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Methods", "GET, HEAD, POST, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("X-Frame-Options", "DENY")
+        self.send_header("Referrer-Policy", "strict-origin-when-cross-origin")
 
     def _send_error(self, code: int, message: str) -> None:
         body = json.dumps({"error": message}).encode("utf-8")
         self.send_response(code)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))
-        self._send_cors_headers()
+        self._send_common_headers()
         self.end_headers()
         self.wfile.write(body)
 

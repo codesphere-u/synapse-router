@@ -7,8 +7,9 @@ import json
 import re
 import time
 from collections import OrderedDict
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -32,8 +33,8 @@ class CacheLookupResult:
     """Result of a semantic cache query."""
 
     hit: bool
-    hamming_distance: Optional[int]
-    entry: Optional[CachedResponseEntry]
+    hamming_distance: int | None
+    entry: CachedResponseEntry | None
 
 
 _TOKEN_NORM_RE = re.compile(r"[a-z0-9_]+")
@@ -46,7 +47,7 @@ def compute_simhash64(text: str) -> int:
         return 0
 
     words = normalized.split()
-    features: List[tuple[str, int]] = []
+    features: list[tuple[str, int]] = []
 
     # Word unigrams (weight 3)
     for w in words:
@@ -85,8 +86,8 @@ def hamming_distance64(a: int, b: int) -> int:
 
 def compute_context_fingerprint(
     system_prompt: str = "",
-    tools_schema: Optional[List[Dict[str, Any]]] = None,
-    require_json_schema: Optional[Dict[str, Any]] = None,
+    tools_schema: list[dict[str, Any]] | None = None,
+    require_json_schema: dict[str, Any] | None = None,
 ) -> str:
     """Compute canonical SHA-256 fingerprint for system prompt, tools, and output schema."""
     payload = {
@@ -114,7 +115,7 @@ class SemanticPromptCache:
         self.ttl_seconds = ttl_seconds
         self.max_entries = max_entries
         self._time_fn = time_fn
-        self._store: "OrderedDict[str, CachedResponseEntry]" = OrderedDict()
+        self._store: OrderedDict[str, CachedResponseEntry] = OrderedDict()
         self.hits: int = 0
         self.misses: int = 0
 
@@ -129,8 +130,8 @@ class SemanticPromptCache:
         self,
         prompt: str,
         system_prompt: str = "",
-        tools_schema: Optional[List[Dict[str, Any]]] = None,
-        require_json_schema: Optional[Dict[str, Any]] = None,
+        tools_schema: list[dict[str, Any]] | None = None,
+        require_json_schema: dict[str, Any] | None = None,
     ) -> CacheLookupResult:
         """Find the closest non-expired cached entry within `max_hamming_distance` in the same tool context."""
         now = self._time_fn()
@@ -143,19 +144,18 @@ class SemanticPromptCache:
         )
         query_hash = compute_simhash64(prompt)
 
-        best_entry: Optional[CachedResponseEntry] = None
-        best_dist: Optional[int] = None
+        best_entry: CachedResponseEntry | None = None
+        best_dist: int | None = None
 
-        for key, entry in list(self._store.items()):
+        for _key, entry in list(self._store.items()):
             if entry.context_fingerprint != ctx_fp:
                 continue
             dist = hamming_distance64(query_hash, entry.simhash)
-            if dist <= self.max_hamming_distance:
-                if best_dist is None or dist < best_dist:
-                    best_dist = dist
-                    best_entry = entry
-                    if dist == 0:
-                        break
+            if dist <= self.max_hamming_distance and (best_dist is None or dist < best_dist):
+                best_dist = dist
+                best_entry = entry
+                if dist == 0:
+                    break
 
         if best_entry is not None and best_dist is not None:
             self.hits += 1
@@ -186,9 +186,9 @@ class SemanticPromptCache:
         tier_name: str,
         confidence: float = 0.95,
         system_prompt: str = "",
-        tools_schema: Optional[List[Dict[str, Any]]] = None,
-        require_json_schema: Optional[Dict[str, Any]] = None,
-        ttl_seconds: Optional[float] = None,
+        tools_schema: list[dict[str, Any]] | None = None,
+        require_json_schema: dict[str, Any] | None = None,
+        ttl_seconds: float | None = None,
     ) -> CachedResponseEntry:
         """Insert a validated response into the semantic cache."""
         now = self._time_fn()
@@ -223,7 +223,7 @@ class SemanticPromptCache:
 
         return entry
 
-    def stats(self) -> Dict[str, Any]:
+    def stats(self) -> dict[str, Any]:
         """Return cache utilization and hit-rate metrics."""
         total = self.hits + self.misses
         return {

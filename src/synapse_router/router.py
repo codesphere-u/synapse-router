@@ -6,12 +6,18 @@ import hashlib
 import hmac
 import json
 import time
+from collections.abc import Callable
 from dataclasses import asdict, dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any
 
 from synapse_router.budget import BudgetExceededError, TokenBudgetGovernor
 from synapse_router.cache import SemanticPromptCache
-from synapse_router.classifier import AgentStepRequest, ComplexityAnalysis, TaskComplexityClassifier, Tier
+from synapse_router.classifier import (
+    AgentStepRequest,
+    ComplexityAnalysis,
+    TaskComplexityClassifier,
+    Tier,
+)
 from synapse_router.health import EndpointHealthRegistry
 from synapse_router.rate_limiter import RateGovernor
 
@@ -67,8 +73,8 @@ class ModelInvocationResult:
     latency_ms: float
     input_tokens: int
     output_tokens: int
-    tool_calls: List[Dict[str, Any]] = field(default_factory=list)
-    error: Optional[str] = None
+    tool_calls: list[dict[str, Any]] = field(default_factory=list)
+    error: str | None = None
 
 
 @dataclass(frozen=True)
@@ -77,7 +83,7 @@ class ValidationOutcome:
 
     passed: bool
     confidence: float
-    reasons: List[str]
+    reasons: list[str]
 
 
 @dataclass(frozen=True)
@@ -92,7 +98,7 @@ class CascadeHop:
     latency_ms: float
     cost_usd: float
     validation_passed: bool
-    escalation_reason: Optional[str] = None
+    escalation_reason: str | None = None
 
 
 @dataclass(frozen=True)
@@ -108,9 +114,9 @@ class RoutingDecisionReceipt:
     final_tier: str
     selected_endpoint_id: str
     cache_hit: bool
-    cache_hamming_distance: Optional[int]
+    cache_hamming_distance: int | None
     soft_cap_downgraded: bool
-    cascade_hops: List[CascadeHop]
+    cascade_hops: list[CascadeHop]
     total_cost_usd: float
     frontier_baseline_cost_usd: float
     cost_saved_usd: float
@@ -120,7 +126,7 @@ class RoutingDecisionReceipt:
     confidence: float
     hmac_sha256_signature: str
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
@@ -140,7 +146,7 @@ class ResponseValidator:
         request: AgentStepRequest,
         result: ModelInvocationResult,
     ) -> ValidationOutcome:
-        reasons: List[str] = []
+        reasons: list[str] = []
 
         if result.error:
             return ValidationOutcome(
@@ -185,7 +191,7 @@ class ResponseValidator:
                                 reasons.append(f"json_type_mismatch:{prop_name}:expected_array")
                             elif expected_type == "object" and not isinstance(val, dict):
                                 reasons.append(f"json_type_mismatch:{prop_name}:expected_object")
-            except Exception:
+            except (ValueError, TypeError, KeyError, AttributeError):
                 reasons.append("invalid_json_payload")
 
         # Validate tool call arguments if tool_calls are present
@@ -211,7 +217,7 @@ class ResponseValidator:
         )
 
 
-def default_endpoint_catalog() -> List[ModelEndpoint]:
+def default_endpoint_catalog() -> list[ModelEndpoint]:
     """Return the default 6-endpoint multi-provider catalog spanning all 3 capability tiers."""
     return [
         ModelEndpoint(
@@ -303,12 +309,12 @@ class SynapseRouter:
 
     def __init__(
         self,
-        endpoints: Optional[List[ModelEndpoint]] = None,
-        classifier: Optional[TaskComplexityClassifier] = None,
-        health_registry: Optional[EndpointHealthRegistry] = None,
-        cache: Optional[SemanticPromptCache] = None,
-        budget_governor: Optional[TokenBudgetGovernor] = None,
-        rate_governor: Optional[RateGovernor] = None,
+        endpoints: list[ModelEndpoint] | None = None,
+        classifier: TaskComplexityClassifier | None = None,
+        health_registry: EndpointHealthRegistry | None = None,
+        cache: SemanticPromptCache | None = None,
+        budget_governor: TokenBudgetGovernor | None = None,
+        rate_governor: RateGovernor | None = None,
         cost_weight: float = 0.35,
         latency_weight: float = 0.25,
         signing_secret: str = "synapse-router-deterministic-hmac-key",
@@ -322,7 +328,7 @@ class SynapseRouter:
         self.latency_weight = latency_weight
         self._signing_secret = signing_secret.encode("utf-8")
 
-        self._endpoints: Dict[str, ModelEndpoint] = {}
+        self._endpoints: dict[str, ModelEndpoint] = {}
         for ep in (endpoints if endpoints is not None else default_endpoint_catalog()):
             self.register_endpoint(ep)
 
@@ -333,7 +339,7 @@ class SynapseRouter:
         self._endpoints[endpoint.id] = endpoint
 
     @property
-    def endpoints(self) -> Dict[str, ModelEndpoint]:
+    def endpoints(self) -> dict[str, ModelEndpoint]:
         return dict(self._endpoints)
 
     def frontier_baseline_cost(self, input_tokens: int, output_tokens: int) -> float:
@@ -351,10 +357,10 @@ class SynapseRouter:
         self,
         request: AgentStepRequest,
         target_tier: Tier,
-        analysis: Optional[ComplexityAnalysis] = None,
+        analysis: ComplexityAnalysis | None = None,
         allow_tier_fallback: bool = True,
-        excluded_endpoints: Optional[set[str]] = None,
-    ) -> List[EndpointCandidateScore]:
+        excluded_endpoints: set[str] | None = None,
+    ) -> list[EndpointCandidateScore]:
         """Score and rank healthy endpoints using Pareto utility maximization."""
         if analysis is None:
             analysis = self.classifier.analyze(request)
@@ -364,8 +370,8 @@ class SynapseRouter:
         needs_json = request.require_json_schema is not None
         total_tokens = analysis.estimated_input_tokens + analysis.estimated_output_tokens
 
-        def _filter_candidates(tier_filter: Optional[Tier], enforce_sla_and_cost: bool) -> List[ModelEndpoint]:
-            matched: List[ModelEndpoint] = []
+        def _filter_candidates(tier_filter: Tier | None, enforce_sla_and_cost: bool) -> list[ModelEndpoint]:
+            matched: list[ModelEndpoint] = []
             for ep in self._endpoints.values():
                 if ep.id in excluded:
                     continue
@@ -431,7 +437,7 @@ class SynapseRouter:
         min_lat = min(all_lats) if all_lats else 1.0
         lat_span = max(1.0, max_lat - min_lat)
 
-        scored: List[EndpointCandidateScore] = []
+        scored: list[EndpointCandidateScore] = []
         for ep in candidates:
             est_cost = ep.estimate_cost_usd(
                 analysis.estimated_input_tokens, analysis.estimated_output_tokens
@@ -464,9 +470,9 @@ class SynapseRouter:
     def select_endpoint(
         self,
         request: AgentStepRequest,
-        target_tier: Optional[Tier] = None,
-        analysis: Optional[ComplexityAnalysis] = None,
-    ) -> Tuple[ModelEndpoint, EndpointCandidateScore, ComplexityAnalysis]:
+        target_tier: Tier | None = None,
+        analysis: ComplexityAnalysis | None = None,
+    ) -> tuple[ModelEndpoint, EndpointCandidateScore, ComplexityAnalysis]:
         """Select the highest-utility healthy endpoint for the given request."""
         if analysis is None:
             analysis = self.classifier.analyze(request)
@@ -502,7 +508,7 @@ class SynapseRouter:
         if request.require_json_schema:
             props = request.require_json_schema.get("properties", {})
             required = request.require_json_schema.get("required", list(props.keys()))
-            payload: Dict[str, Any] = {}
+            payload: dict[str, Any] = {}
             for key in required:
                 spec = props.get(key, {})
                 t = spec.get("type", "string") if isinstance(spec, dict) else "string"
@@ -523,7 +529,7 @@ class SynapseRouter:
                 f"(complexity={analysis.complexity_score:.2f}, confidence={confidence:.2f})."
             )
 
-        tool_calls: List[Dict[str, Any]] = []
+        tool_calls: list[dict[str, Any]] = []
         if request.tools_schema:
             first_tool = request.tools_schema[0].get("name", "default_tool")
             tool_calls.append({"name": first_tool, "arguments": {"query": request.prompt[:48]}})
@@ -539,14 +545,14 @@ class SynapseRouter:
             error=None,
         )
 
-    def _sign_receipt(self, payload: Dict[str, Any]) -> str:
+    def _sign_receipt(self, payload: dict[str, Any]) -> str:
         serialized = json.dumps(payload, sort_keys=True, separators=(",", ":"))
         return hmac.new(self._signing_secret, serialized.encode("utf-8"), hashlib.sha256).hexdigest()
 
     def execute_cascade(
         self,
         request: AgentStepRequest,
-        executor: Optional[ExecutorCallback] = None,
+        executor: ExecutorCallback | None = None,
     ) -> RoutingDecisionReceipt:
         """Route request with semantic caching, circuit-breaker failover, and confidence cascade escalation."""
         t0 = time.perf_counter()
@@ -632,12 +638,12 @@ class SynapseRouter:
         if not tier_sequence:
             tier_sequence = [starting_tier]
 
-        hops: List[CascadeHop] = []
+        hops: list[CascadeHop] = []
         attempted_endpoints: set[str] = set()
         total_cost_usd = 0.0
         total_model_latency_ms = 0.0
-        final_result: Optional[ModelInvocationResult] = None
-        final_endpoint: Optional[ModelEndpoint] = None
+        final_result: ModelInvocationResult | None = None
+        final_endpoint: ModelEndpoint | None = None
 
         tier_idx = 0
         while tier_idx < len(tier_sequence):
@@ -803,7 +809,7 @@ class SynapseRouter:
         task_prompt: str = "",
         budget_cap_usd: float = 1.0,
         token_budget_cap: int = 120_000,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Export a RoutingDecisionReceipt into a canonical Nexus Aegis G2 attestation leaf."""
         from synapse_router.aegis_bridge import create_aegis_g2_leaf
 

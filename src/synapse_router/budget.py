@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, Optional
 
 from synapse_router.classifier import Tier
 
@@ -54,21 +53,21 @@ class TokenBudgetGovernor:
         self.default_tenant_max_tokens = default_tenant_max_tokens
         self.soft_cap_ratio = soft_cap_ratio
 
-        self._workflow_limits_usd: Dict[str, float] = {}
-        self._workflow_limits_tokens: Dict[str, int] = {}
-        self._tenant_limits_usd: Dict[str, float] = {}
-        self._tenant_limits_tokens: Dict[str, int] = {}
+        self._workflow_limits_usd: dict[str, float] = {}
+        self._workflow_limits_tokens: dict[str, int] = {}
+        self._tenant_limits_usd: dict[str, float] = {}
+        self._tenant_limits_tokens: dict[str, int] = {}
 
-        self._workflow_usage: Dict[str, _UsageLedger] = {}
-        self._tenant_usage: Dict[str, _UsageLedger] = {}
+        self._workflow_usage: dict[str, _UsageLedger] = {}
+        self._tenant_usage: dict[str, _UsageLedger] = {}
 
-    def set_workflow_budget(self, workflow_id: str, max_usd: float, max_tokens: Optional[int] = None) -> None:
+    def set_workflow_budget(self, workflow_id: str, max_usd: float, max_tokens: int | None = None) -> None:
         """Configure custom hard budget caps for a specific workflow."""
         self._workflow_limits_usd[workflow_id] = max_usd
         if max_tokens is not None:
             self._workflow_limits_tokens[workflow_id] = max_tokens
 
-    def set_tenant_budget(self, tenant_id: str, max_usd: float, max_tokens: Optional[int] = None) -> None:
+    def set_tenant_budget(self, tenant_id: str, max_usd: float, max_tokens: int | None = None) -> None:
         """Configure custom hard budget caps for a specific tenant."""
         self._tenant_limits_usd[tenant_id] = max_usd
         if max_tokens is not None:
@@ -209,7 +208,7 @@ class TokenBudgetGovernor:
         tn.spent_tokens += max(0, int(tokens))
         tn.step_count += 1
 
-    def get_status(self, tenant_id: str, workflow_id: str) -> Dict[str, object]:
+    def get_status(self, tenant_id: str, workflow_id: str) -> dict[str, object]:
         """Return structured budget ledger status for inspection and MCP tools."""
         wf = self._get_workflow_ledger(workflow_id)
         tn = self._get_tenant_ledger(tenant_id)

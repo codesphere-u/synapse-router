@@ -5,10 +5,13 @@ __pycache__
 .git
 .github
 .pytest_cache
+.ruff_cache
+.mypy_cache
 .coverage
 htmlcov/
 dist/
 build/
-*.egg-info/
+*.egg-info
 .venv/
 venv/
+.vercel

@@ -28,10 +28,15 @@ def test_health_check(http_server):
     req = urllib.request.Request(f"{http_server}/health")
     with urllib.request.urlopen(req) as resp:
         assert resp.status == 200
+        assert resp.headers.get("X-Content-Type-Options") == "nosniff"
         data = json.loads(resp.read().decode())
         assert data["status"] == "healthy"
         assert data["server"] == "synapse-router"
         assert "http" in data["transport"]
+
+    head_req = urllib.request.Request(f"{http_server}/health", method="HEAD")
+    with urllib.request.urlopen(head_req) as head_resp:
+        assert head_resp.status == 200
 
 
 def test_json_rpc_tools_list_over_http(http_server):

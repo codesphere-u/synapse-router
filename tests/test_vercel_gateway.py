@@ -7,7 +7,7 @@ import pytest
 
 pytest.importorskip("fastapi")
 pytest.importorskip("httpx")
-from fastapi.testclient import TestClient  # noqa: E402
+from fastapi.testclient import TestClient
 
 _spec = importlib.util.spec_from_file_location(
     "vercel_gateway", Path(__file__).resolve().parent.parent / "api" / "index.py"

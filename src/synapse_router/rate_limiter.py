@@ -9,7 +9,7 @@ from __future__ import annotations
 import collections
 import time
 from dataclasses import dataclass
-from typing import Deque, Dict, Optional, Tuple
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -60,9 +60,9 @@ class RateGovernor:
             max_tpm=default_tpm,
             window_seconds=window_seconds,
         )
-        self._configs: Dict[str, RateLimitConfig] = {}
+        self._configs: dict[str, RateLimitConfig] = {}
         # endpoint_id -> deque of (timestamp: float, tokens: int)
-        self._history: Dict[str, Deque[Tuple[float, int]]] = {}
+        self._history: dict[str, collections.deque[tuple[float, int]]] = {}
 
     def configure_endpoint(
         self,
@@ -86,12 +86,12 @@ class RateGovernor:
         """Return the effective RateLimitConfig for an endpoint."""
         return self._configs.get(endpoint_id, self.default_config)
 
-    def _get_history(self, endpoint_id: str) -> Deque[Tuple[float, int]]:
+    def _get_history(self, endpoint_id: str) -> collections.deque[tuple[float, int]]:
         if endpoint_id not in self._history:
             self._history[endpoint_id] = collections.deque()
         return self._history[endpoint_id]
 
-    def _prune(self, endpoint_id: str, now: float, window_seconds: float) -> Deque[Tuple[float, int]]:
+    def _prune(self, endpoint_id: str, now: float, window_seconds: float) -> collections.deque[tuple[float, int]]:
         q = self._get_history(endpoint_id)
         cutoff = now - window_seconds
         while q and q[0][0] <= cutoff:
@@ -102,7 +102,7 @@ class RateGovernor:
         self,
         endpoint_id: str,
         estimated_tokens: int = 0,
-        now: Optional[float] = None,
+        now: float | None = None,
     ) -> RateLimitDecision:
         """Evaluate whether an incoming request can proceed under RPM/TPM limits."""
         current_time = time.time() if now is None else float(now)
@@ -180,7 +180,7 @@ class RateGovernor:
         self,
         endpoint_id: str,
         tokens: int = 0,
-        now: Optional[float] = None,
+        now: float | None = None,
     ) -> RateLimitDecision:
         """Record an executed request and token consumption in the sliding window."""
         current_time = time.time() if now is None else float(now)
@@ -226,7 +226,7 @@ class RateGovernor:
             reason="Recorded within sliding-window capacity",
         )
 
-    def get_status(self, endpoint_id: str, now: Optional[float] = None) -> Dict[str, Any]:
+    def get_status(self, endpoint_id: str, now: float | None = None) -> dict[str, Any]:
         """Return a structured dictionary snapshot of an endpoint's rate utilization."""
         current_time = time.time() if now is None else float(now)
         cfg = self.get_config(endpoint_id)
@@ -249,7 +249,7 @@ class RateGovernor:
             "saturated": current_rpm >= effective_max_rpm or current_tpm >= effective_max_tpm,
         }
 
-    def reset(self, endpoint_id: Optional[str] = None) -> None:
+    def reset(self, endpoint_id: str | None = None) -> None:
         """Reset historical sliding window consumption records."""
         if endpoint_id is not None:
             self._history.pop(endpoint_id, None)

@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import time
 from collections import deque
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
-from typing import Callable, Deque, Dict, Optional, Tuple
 
 
 class CircuitState(str, Enum):
@@ -29,24 +29,24 @@ class EndpointHealthSnapshot:
     rate_limit_429_count: int
     server_5xx_count: int
     timeout_count: int
-    ema_latency_ms: Optional[float]
+    ema_latency_ms: float | None
     is_available: bool
-    last_error_reason: Optional[str]
+    last_error_reason: str | None
 
 
 class _EndpointState:
     def __init__(self, window_size: int) -> None:
         self.state: CircuitState = CircuitState.CLOSED
         self.total_calls: int = 0
-        self.outcomes: Deque[Tuple[float, bool, str]] = deque(maxlen=window_size)
+        self.outcomes: deque[tuple[float, bool, str]] = deque(maxlen=window_size)
         self.consecutive_failures: int = 0
         self.half_open_successes: int = 0
         self.rate_limit_429_count: int = 0
         self.server_5xx_count: int = 0
         self.timeout_count: int = 0
-        self.ema_latency_ms: Optional[float] = None
-        self.opened_at: Optional[float] = None
-        self.last_error_reason: Optional[str] = None
+        self.ema_latency_ms: float | None = None
+        self.opened_at: float | None = None
+        self.last_error_reason: str | None = None
 
 
 class EndpointHealthRegistry:
@@ -71,7 +71,7 @@ class EndpointHealthRegistry:
         self.window_size = window_size
         self.ema_alpha = ema_alpha
         self._time_fn = time_fn
-        self._endpoints: Dict[str, _EndpointState] = {}
+        self._endpoints: dict[str, _EndpointState] = {}
 
     def _get_or_create(self, endpoint_id: str) -> _EndpointState:
         if endpoint_id not in self._endpoints:
@@ -130,7 +130,7 @@ class EndpointHealthRegistry:
         self,
         endpoint_id: str,
         error_type: str = "http_500",
-        latency_ms: Optional[float] = None,
+        latency_ms: float | None = None,
     ) -> CircuitState:
         """Record an endpoint failure (e.g. 'http_429', 'http_503', 'timeout') and trip breaker if needed."""
         st = self._get_or_create(endpoint_id)
@@ -207,6 +207,6 @@ class EndpointHealthRegistry:
             last_error_reason=st.last_error_reason,
         )
 
-    def all_snapshots(self) -> Dict[str, EndpointHealthSnapshot]:
+    def all_snapshots(self) -> dict[str, EndpointHealthSnapshot]:
         """Return health snapshots for all tracked endpoints."""
         return {ep_id: self.snapshot(ep_id) for ep_id in sorted(self._endpoints.keys())}
