@@ -28,9 +28,27 @@ def rpc(method, params=None, id_=1):
 
 
 def test_health_lists_streamable_http():
-    data = client.get("/health").json()
+    r = client.get("/health")
+    data = r.json()
     assert data["status"] == "healthy"
     assert data["endpoint"] == "/mcp"
+    assert r.headers.get("x-content-type-options") == "nosniff"
+    assert r.headers.get("x-frame-options") == "SAMEORIGIN"
+    assert r.headers.get("referrer-policy") == "strict-origin-when-cross-origin"
+    assert r.headers.get("x-request-id")
+
+
+def test_health_head_probe():
+    for path in ("/", "/health", "/healthz", "/api/health"):
+        r = client.head(path)
+        assert r.status_code == 200
+
+
+def test_request_id_echoed_and_sanitized():
+    r = client.get("/health", headers={"X-Request-ID": "req-abc_123"})
+    assert r.headers.get("x-request-id") == "req-abc_123"
+    r_bad = client.get("/health", headers={"X-Request-ID": "bad value!"})
+    assert r_bad.headers.get("x-request-id") != "bad value!"
 
 
 def test_ping_returns_empty_result():

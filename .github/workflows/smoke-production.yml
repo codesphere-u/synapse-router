@@ -2,12 +2,19 @@ name: Production smoke test
 
 on:
   deployment_status:
+  release:
+    types: [published]
   workflow_dispatch:
 
 jobs:
   smoke-production:
-    # Vercel reports deployments to GitHub; test the live endpoint once a production deploy succeeds.
-    if: github.event_name == 'workflow_dispatch' || (github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Production')
+    # Run when Vercel production deploy succeeds, when a PyPI/GitHub release publishes, or manually.
+    if: >-
+      github.event_name == 'workflow_dispatch'
+      || github.event_name == 'release'
+      || (github.event.deployment_status.state == 'success'
+          && (contains(github.event.deployment.environment, 'Production')
+              || github.event.deployment.environment == 'pypi'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

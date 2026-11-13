@@ -99,10 +99,34 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=False,
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["GET", "POST", "HEAD", "OPTIONS"],
     allow_headers=["*"],
-    expose_headers=["Mcp-Session-Id"],
+    expose_headers=["Mcp-Session-Id", "X-Request-ID"],
 )
+
+
+def _resolve_request_id(header_value: Optional[str]) -> str:
+    """Validate incoming X-Request-ID or mint a fresh hex trace token."""
+    candidate = (header_value or "").strip()
+    if (
+        candidate
+        and len(candidate) <= 64
+        and candidate.isascii()
+        and all(ch.isalnum() or ch in "-_." for ch in candidate)
+    ):
+        return candidate
+    return os.urandom(16).hex()
+
+
+@app.middleware("http")
+async def _security_headers_middleware(request: Request, call_next: Any) -> Response:
+    req_id = _resolve_request_id(request.headers.get("x-request-id"))
+    response: Response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers["X-Request-ID"] = req_id
+    return response
 
 
 def _error(code: int, message: str, req_id: Any = None, status: int = 200) -> JSONResponse:
@@ -215,6 +239,14 @@ async def health_check(request: Request):
     }
 
 
+@app.head("/")
+@app.head("/health")
+@app.head("/healthz")
+@app.head("/api/health")
+async def health_head() -> Response:
+    return Response(status_code=200, media_type="application/json")
+
+
 @app.get("/mcp")
 async def mcp_get(request: Request):
     accept = request.headers.get("accept", "")
@@ -222,7 +254,7 @@ async def mcp_get(request: Request):
         return await sse_legacy(request)
     if "text/html" in accept:
         return await health_check(request)
-    return await health_check(request)
+    return Response(status_code=405, headers={"Allow": "POST, OPTIONS"})
 
 
 @app.get("/sse")
