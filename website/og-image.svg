@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none">
+  <rect width="1200" height="630" fill="#fffdf2"/>
+  <rect x="44" y="44" width="1112" height="542" rx="32" fill="#ffffff" stroke="#dbe3eb" stroke-width="3"/>
+  <rect x="88" y="88" width="96" height="96" rx="24" fill="#0c4a6e"/>
+  <path d="M108 136h22l12-22h24M130 136l12 22h24" stroke="#e0f2fe" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="108" cy="136" r="6" fill="#0284c7"/>
+  <circle cx="166" cy="114" r="6" fill="#f59e0b"/>
+  <circle cx="166" cy="158" r="6" fill="#e0f2fe"/>
+  <text x="88" y="256" font-family="Georgia, 'Times New Roman', serif" font-size="64" font-weight="700" fill="#0f172a">Synapse-Router v1.2.0</text>
+  <text x="88" y="316" font-family="Inter, -apple-system, sans-serif" font-size="30" fill="#475569">Pareto Multi-Model AI Router, 64-Bit SimHash Cache &amp; 3-State Circuit Breaker</text>
+  <rect x="88" y="376" width="236" height="54" rx="27" fill="#0284c7"/>
+  <text x="206" y="411" text-anchor="middle" font-family="Inter, sans-serif" font-size="22" font-weight="700" fill="#ffffff">90.59% Spend Saved</text>
+  <rect x="344" y="376" width="246" height="54" rx="27" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+  <text x="467" y="411" text-anchor="middle" font-family="Inter, sans-serif" font-size="22" font-weight="700" fill="#78350f">0.75 ms Routing P50</text>
+  <rect x="610" y="376" width="256" height="54" rx="27" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+  <text x="738" y="411" text-anchor="middle" font-family="Inter, sans-serif" font-size="22" font-weight="700" fill="#0c4a6e">Nexus Aegis G2 Ready</text>
+  <text x="88" y="520" font-family="JetBrains Mono, monospace" font-size="22" fill="#475569">codesphere-u.github.io/synapse-router/</text>
+</svg>

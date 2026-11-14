@@ -16,7 +16,7 @@ from portal import render_developer_portal  # noqa: E402
 def test_portal_html_render():
     html = render_developer_portal(
         server_name="synapse-router",
-        server_version="1.1.0",
+        server_version="1.2.0",
         tagline="Cost-Aware Multi-Model AI Agent Router",
         endpoint_url="https://synapse-router.vercel.app/mcp",
         github_url="https://github.com/codesphere-u/synapse-router",

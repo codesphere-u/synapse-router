@@ -1,0 +1,20 @@
+# Synapse-Router v1.2.0 — Complete Technical Reference
+
+Synapse-Router (`synapse-router`) is an open-source, MIT-licensed multi-model AI agent routing engine and JSON-RPC 2.0 Model Context Protocol (MCP) gateway.
+
+## Measured 500-Request Benchmark (`synapse-router benchmark --requests 500`)
+- Routing Engine P50 Latency: `745.69 µs` (`0.7457 ms`)
+- Routing Engine P95 Latency: `1031.33 µs` (`1.0313 ms`)
+- Frontier-Only Baseline Cost: `$3.7402 USD`
+- Synapse-Router Total Cost: `$0.3520 USD` (`90.59% saved`)
+- Cascade Quality Retention: `100.00%` (`confidence >= 0.78`)
+- Provider Failover Recovery Rate: `100.00%` (`13/13` HTTP 429s)
+- Semantic Cache Hit Rate: `22.20%` (64-bit SimHash)
+
+## 6 MCP Tools
+- `route_agent_step`
+- `classify_task_complexity`
+- `inspect_endpoint_health`
+- `check_budget_status`
+- `synapse_rate_limit_status`
+- `synapse_export_aegis_g2`

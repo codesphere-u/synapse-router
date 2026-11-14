@@ -7,8 +7,8 @@ authors:
     affiliation: "Codesphere Innovations (U) Limited"
 title: "Synapse Router"
 abstract: "Dynamic Semantic Routing Engine and Multi-Tier LLM Cost Optimization Gateway"
-version: "1.0.0"
-date-released: 2026-11-10
-url: "https://github.com/codesphere-u/synapse-router"
+version: "1.2.0"
+date-released: 2026-11-14
+url: "https://codesphere-u.github.io/synapse-router/"
 repository-code: "https://github.com/codesphere-u/synapse-router"
 license: "MIT"

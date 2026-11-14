@@ -1,7 +1,10 @@
 # synapse-router
 
 [![CI](https://github.com/codesphere-u/synapse-router/actions/workflows/ci.yml/badge.svg)](https://github.com/codesphere-u/synapse-router/actions/workflows/ci.yml)
-[![Release v1.1.0](https://img.shields.io/badge/release-v1.1.0-blue.svg)](https://github.com/codesphere-u/synapse-router/releases/tag/v1.1.0)
+[![Release v1.2.0](https://img.shields.io/badge/release-v1.2.0-0284c7.svg)](https://github.com/codesphere-u/synapse-router/releases/tag/v1.2.0)
+[![Website](https://img.shields.io/badge/website-codesphere--u.github.io%2Fsynapse--router-0284c7.svg)](https://codesphere-u.github.io/synapse-router/)
+
+> **Live Website & Routing Studio:** [codesphere-u.github.io/synapse-router](https://codesphere-u.github.io/synapse-router/) | **Docs:** [Getting Started](docs/GETTING_STARTED.md) &middot; [Routing & Aegis G2](docs/ROUTING_AND_AEGIS_G2.md)
 [![Python 3.10 | 3.11 | 3.12](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue.svg)](https://github.com/codesphere-u/synapse-router)
 [![MCP Spec](https://img.shields.io/badge/MCP-2024--11--05-7c3aed.svg)](https://modelcontextprotocol.io/)
 [![Vercel Deployment](https://img.shields.io/badge/Vercel-Operational-10b981?logo=vercel&logoColor=white)](https://synapse-router.vercel.app/mcp)

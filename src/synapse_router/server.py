@@ -290,7 +290,7 @@ class SynapseMCPServer:
                     req_id,
                     {
                         "protocolVersion": "2024-11-05",
-                        "serverInfo": {"name": "synapse-router-mcp", "version": "1.1.0"},
+                        "serverInfo": {"name": "synapse-router-mcp", "version": "1.2.0"},
                         "capabilities": {
                             "tools": {"listChanged": False},
                             "resources": {"subscribe": False, "listChanged": False},

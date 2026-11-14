@@ -40,7 +40,7 @@ except ImportError:
     from api.portal import render_developer_portal
 
 SERVER_NAME = "synapse-router"
-SERVER_VERSION = "1.1.0"
+SERVER_VERSION = "1.2.0"
 MAX_BODY_BYTES = 1_000_000
 
 # Best-effort per-IP sliding-window rate limit. State is per serverless instance, so it

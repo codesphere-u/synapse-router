@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Documentation — Synapse-Router</title>
+  <meta name="description" content="Complete Synapse-Router documentation covering installation, Pareto cascade routing, SimHash cache, RateGovernor, and Nexus Aegis G2 export." />
+  <link rel="canonical" href="https://codesphere-u.github.io/synapse-router/docs.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Documentation — Synapse-Router" />
+  <meta property="og:description" content="Developer reference for Synapse-Router CLI, Python API, MCP server, and Vercel gateway." />
+  <meta property="og:image" content="https://codesphere-u.github.io/synapse-router/og-image.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="docs-layout">
+    <aside class="docs-sidebar">
+      <a class="docs-brand" href="index.html">
+        <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
+          <rect width="64" height="64" rx="16" fill="#0c4a6e"/>
+          <path d="M14 32h14l8-14h14M28 32l8 14h14" stroke="#e0f2fe" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="14" cy="32" r="5" fill="#0284c7"/>
+          <circle cx="36" cy="18" r="5" fill="#f59e0b"/>
+        </svg>
+        <span>Synapse-Router</span>
+      </a>
+      <nav class="docs-nav" aria-label="Documentation Navigation">
+        <a href="index.html">Home</a>
+        <a href="studio.html">Studio</a>
+        <a href="proof.html">Benchmarks</a>
+        <a href="rules.html">Rules &amp; MCP</a>
+        <a href="docs.html" class="active">Docs</a>
+        <a href="https://github.com/codesphere-u/synapse-router">GitHub</a>
+      </nav>
+      <div class="docs-rail-foot">v1.2.0 &middot; MIT License</div>
+    </aside>
+
+    <main class="docs-main">
+      <h1>Synapse-Router Documentation</h1>
+      <p style="color:var(--muted);">Cost-aware multi-model AI agent router, semantic cache, circuit breaker, and MCP gateway.</p>
+
+      <nav class="doc-subrail" aria-label="Page Sections">
+        <a href="#install">Install</a>
+        <a href="#cascade">Pareto Cascade</a>
+        <a href="#cache">SimHash64 Cache</a>
+        <a href="#ratelimit">RateGovernor</a>
+        <a href="#aegis">Aegis G2</a>
+        <a href="#mcp">MCP &amp; CLI</a>
+      </nav>
+
+      <h2 id="install">1. Installation &amp; Benchmark</h2>
+      <pre><code>git clone https://github.com/codesphere-u/synapse-router.git
+cd synapse-router
+pip install -e ".[dev]"
+synapse-router benchmark --requests 500</code></pre>
+
+      <h2 id="cascade">2. Pareto Utility &amp; Confidence Cascade</h2>
+      <p><code>SynapseRouter.execute_cascade()</code> scores healthy endpoints by prior quality, normalized cost, and EMA latency. If <code>ResponseValidator</code> detects low confidence, invalid JSON schema, or empty tool arguments, it escalates automatically across <code>FAST_LOCAL -&gt; BALANCED -&gt; FRONTIER_REASONING</code>.</p>
+
+      <h2 id="cache">3. 64-Bit SimHash Semantic Cache</h2>
+      <p><code>SemanticPromptCache</code> combines weighted word unigrams, bigrams, and 4-char shingles via <code>blake2b</code>, matching within Hamming distance &le; 3 while isolating entries by SHA-256 <code>context_fingerprint</code>.</p>
+
+      <h2 id="ratelimit">4. Sliding-Window RateGovernor &amp; Circuit Breaker</h2>
+      <p><code>RateGovernor</code> tracks rolling 60-second RPM and TPM consumption per endpoint and down-ranks saturated candidates preemptively, while <code>EndpointHealthRegistry</code> trips <code>OPEN</code> circuits on HTTP 429 spikes in &lt;0.05 ms.</p>
+
+      <h2 id="aegis">5. Nexus Aegis G2 Attestation</h2>
+      <pre><code>synapse-router export-aegis --cost 0.003 --budget 0.05 --tokens 900</code></pre>
+
+      <h2 id="mcp">6. MCP Clients &amp; Hosted Gateway</h2>
+      <pre><code>claude mcp add --transport http synapse-router https://synapse-router.vercel.app/mcp
+synapse-router rate-status --json</code></pre>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>

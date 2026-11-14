@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MCP Tools &amp; Aegis G2 Rules — Synapse-Router</title>
+  <meta name="description" content="Searchable reference of all 6 Synapse-Router MCP tools, Nexus Aegis G2 budget gates, and SimHash / circuit-breaker specifications." />
+  <link rel="canonical" href="https://codesphere-u.github.io/synapse-router/rules.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="MCP Tools &amp; Aegis G2 Rules — Synapse-Router" />
+  <meta property="og:description" content="Complete reference of Synapse-Router MCP tools, rate governor rules, and Aegis G2 attestations." />
+  <meta property="og:image" content="https://codesphere-u.github.io/synapse-router/og-image.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page-col">
+    <header class="site-header">
+      <a class="brand-mark" href="index.html">
+        <svg class="brand-mascot" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+          <rect width="64" height="64" rx="16" fill="#0c4a6e"/>
+          <path d="M14 32h14l8-14h14M28 32l8 14h14" stroke="#e0f2fe" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="14" cy="32" r="5" fill="#0284c7" stroke="#e0f2fe" stroke-width="2"/>
+          <circle cx="36" cy="18" r="5" fill="#f59e0b" stroke="#fef3c7" stroke-width="2"/>
+          <circle cx="36" cy="46" r="5" fill="#0284c7" stroke="#e0f2fe" stroke-width="2"/>
+        </svg>
+        <svg class="brand-wordmark-svg" width="196" height="36" viewBox="0 0 196 36" role="img" aria-label="Synapse-Router">
+          <text x="98" y="27" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="25" font-weight="700" fill="#0f172a">Synapse-Router</text>
+        </svg>
+        <span class="sr-only">Synapse-Router</span>
+      </a>
+      <nav class="site-nav" aria-label="Primary Navigation">
+        <a href="index.html">Home</a>
+        <a href="studio.html">Studio</a>
+        <a href="proof.html">Benchmarks</a>
+        <a href="rules.html" class="active">Rules &amp; MCP</a>
+        <a href="docs.html">Docs</a>
+        <a href="https://github.com/codesphere-u/synapse-router">GitHub</a>
+      </nav>
+    </header>
+
+    <main>
+      <p class="hero-kicker">Protocol &amp; Policy Reference</p>
+      <h1 class="hero-title" style="font-size:2rem;">6 MCP Tools &amp; Aegis G2 Routing Gates</h1>
+      <p id="rulesCount" style="color:var(--muted);margin-bottom:14px;"></p>
+
+      <div class="rules-filter">
+        <input id="rulesSearch" class="handy-input" style="flex:1 1 240px;" type="search" placeholder="Filter tools, gates, or resources..." />
+        <select id="rulesCategory" class="handy-select" style="flex:0 0 190px;">
+          <option value="all">All Specifications</option>
+          <option value="tool">MCP Tools (6)</option>
+          <option value="gate">Aegis G2 &amp; Policy (3)</option>
+          <option value="resource">Resources &amp; Prompts (4)</option>
+        </select>
+      </div>
+
+      <article class="rule-card" data-rule-card data-cat="tool">
+        <span class="rule-id">TOOL &middot; route_agent_step</span>
+        <h2 style="font-size:1.05rem;margin:8px 0 4px;">Route Agent Step Across Tiers</h2>
+        <p style="margin:0;font-size:0.9rem;color:var(--muted);">Evaluates Pareto cost/latency, SimHash cache, circuit breakers, and confidence escalation returning a signed receipt.</p>
+      </article>
+      <article class="rule-card" data-rule-card data-cat="tool">
+        <span class="rule-id">TOOL &middot; classify_task_complexity</span>
+        <h2 style="font-size:1.05rem;margin:8px 0 4px;">Classify Complexity Score &amp; Tier</h2>
+        <p style="margin:0;font-size:0.9rem;color:var(--muted);">Computes deterministic <code>[0.0, 1.0]</code> complexity score and assigns <code>FAST_LOCAL</code>, <code>BALANCED</code>, or <code>FRONTIER_REASONING</code>.</p>
+      </article>
+      <article class="rule-card" data-rule-card data-cat="tool">
+        <span class="rule-id">TOOL &middot; inspect_endpoint_health</span>
+        <h2 style="font-size:1.05rem;margin:8px 0 4px;">Inspect 3-State Circuit Breaker Health</h2>
+        <p style="margin:0;font-size:0.9rem;color:var(--muted);">Reports <code>CLOSED / OPEN / HALF_OPEN</code> status, error rate, and EMA latency per model endpoint.</p>
+      </article>
+      <article class="rule-card" data-rule-card data-cat="tool">
+        <span class="rule-id">TOOL &middot; check_budget_status</span>
+        <h2 style="font-size:1.05rem;margin:8px 0 4px;">Check Tenant &amp; Workflow Budget</h2>
+        <p style="margin:0;font-size:0.9rem;color:var(--muted);">Evaluates 80% soft-cap tier downgrade and 100% hard-cap enforcement for tenant workflows.</p>
+      </article>
+      <article class="rule-card" data-rule-card data-cat="tool">
+        <span class="rule-id">TOOL &middot; synapse_rate_limit_status</span>
+        <h2 style="font-size:1.05rem;margin:8px 0 4px;">Sliding-Window RPM/TPM Status</h2>
+        <p style="margin:0;font-size:0.9rem;color:var(--muted);">Inspects rolling 60s request and token saturation with exact <code>retry_after_seconds</code>.</p>
+      </article>
+      <article class="rule-card" data-rule-card data-cat="tool">
+        <span class="rule-id">TOOL &middot; synapse_export_aegis_g2</span>
+        <h2 style="font-size:1.05rem;margin:8px 0 4px;">Export Nexus Aegis G2 Leaf</h2>
+        <p style="margin:0;font-size:0.9rem;color:var(--muted);">Produces RFC 6962 domain-separated (<code>0x00</code>) SHA-256 leaf digest and budget/tier policy attestation.</p>
+      </article>
+
+      <article class="rule-card" data-rule-card data-cat="gate">
+        <span class="rule-id">G2 &middot; USD_BUDGET_CAP</span>
+        <h2 style="font-size:1.05rem;margin:8px 0 4px;">Hard USD &amp; 80% Soft-Cap Downgrade</h2>
+        <p style="margin:0;font-size:0.9rem;color:var(--muted);">Rejects executions exceeding <code>budget_cap_usd</code> and downgrades tiers automatically above 80% utilization.</p>
+      </article>
+      <article class="rule-card" data-rule-card data-cat="gate">
+        <span class="rule-id">G2 &middot; TOKEN_CEILING_120K</span>
+        <h2 style="font-size:1.05rem;margin:8px 0 4px;">120,000 Token Step Ceiling</h2>
+        <p style="margin:0;font-size:0.9rem;color:var(--muted);">Flags single-step runaway context consumption above <code>120,000</code> tokens.</p>
+      </article>
+      <article class="rule-card" data-rule-card data-cat="gate">
+        <span class="rule-id">G2 &middot; ANTI_OVERPROVISIONING</span>
+        <h2 style="font-size:1.05rem;margin:8px 0 4px;">Anti-Overprovisioning Guardrail</h2>
+        <p style="margin:0;font-size:0.9rem;color:var(--muted);">Blocks routing trivial tasks (ping, echo, lowercase, format JSON) to expensive frontier reasoning models.</p>
+      </article>
+
+      <article class="rule-card" data-rule-card data-cat="resource">
+        <span class="rule-id">RESOURCE &middot; synapse://endpoints/catalog</span>
+        <h2 style="font-size:1.05rem;margin:8px 0 4px;">Registered Model Endpoint Catalog</h2>
+        <p style="margin:0;font-size:0.9rem;color:var(--muted);">Lists configured endpoints, tier mappings, token prices, and capabilities.</p>
+      </article>
+      <article class="rule-card" data-rule-card data-cat="resource">
+        <span class="rule-id">RESOURCE &middot; synapse://health/summary</span>
+        <h2 style="font-size:1.05rem;margin:8px 0 4px;">Circuit Breaker Health Summary</h2>
+        <p style="margin:0;font-size:0.9rem;color:var(--muted);">Live availability, failure counts, and EMA latency across all endpoints.</p>
+      </article>
+      <article class="rule-card" data-rule-card data-cat="resource">
+        <span class="rule-id">PROMPT &middot; route-task-advisor</span>
+        <h2 style="font-size:1.05rem;margin:8px 0 4px;">Task Routing Tier Advisor</h2>
+        <p style="margin:0;font-size:0.9rem;color:var(--muted);">Recommends optimal tier and fallback cascade from prompt complexity and latency SLA.</p>
+      </article>
+      <article class="rule-card" data-rule-card data-cat="resource">
+        <span class="rule-id">PROMPT &middot; budget-allocation-planner</span>
+        <h2 style="font-size:1.05rem;margin:8px 0 4px;">Workflow Budget Planner</h2>
+        <p style="margin:0;font-size:0.9rem;color:var(--muted);">Designs token quotas, 80% downgrade rules, and 429 failover thresholds for multi-step workflows.</p>
+      </article>
+    </main>
+
+    <footer class="site-footer">
+      <span>Synapse-Router v1.2.0 &middot; MIT License</span>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="studio.html">Studio</a>
+        <a href="docs.html">Docs</a>
+      </div>
+    </footer>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>

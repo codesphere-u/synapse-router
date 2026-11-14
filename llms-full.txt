@@ -1,0 +1,3 @@
+# Synapse-Router v1.2.0 — Complete Technical Reference
+
+Synapse-Router provides Pareto multi-tier routing (`FAST_LOCAL`, `BALANCED`, `FRONTIER_REASONING`), 64-bit SimHash semantic caching (`SemanticPromptCache`), 3-state provider circuit breakers (`EndpointHealthRegistry`), rolling 60s RPM/TPM governance (`RateGovernor`), and Nexus Aegis `G2_BUDGET_ROUTING` RFC 6962 attestation (`create_aegis_g2_leaf`) across Python API, CLI, `stdio` MCP, HTTP/SSE, and Vercel Streamable HTTP.

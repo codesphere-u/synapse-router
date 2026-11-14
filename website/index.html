@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Synapse-Router — Cost-Aware Multi-Model AI Agent Router</title>
+  <meta name="description" content="Pareto multi-model AI agent router with 64-bit SimHash semantic caching, 3-state circuit breaker, RateGovernor, and Nexus Aegis G2 attestation." />
+  <link rel="canonical" href="https://codesphere-u.github.io/synapse-router/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Synapse-Router v1.2.0 — Cost-Aware Multi-Model AI Agent Router" />
+  <meta property="og:description" content="Save 90.59% on multi-agent LLM spend with 0.75 ms P50 routing, SimHash semantic cache, and 100% HTTP 429 failover recovery." />
+  <meta property="og:url" content="https://codesphere-u.github.io/synapse-router/" />
+  <meta property="og:image" content="https://codesphere-u.github.io/synapse-router/og-image.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Synapse-Router v1.2.0 — Cost-Aware Multi-Model AI Agent Router" />
+  <meta name="twitter:description" content="Deterministic multi-tier agent routing, cascade escalation, SimHash cache, and Nexus Aegis G2 attestation." />
+  <meta name="twitter:image" content="https://codesphere-u.github.io/synapse-router/og-image.svg" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://codesphere-u.github.io/#org",
+        "name": "Codesphere Innovations (U) Limited",
+        "url": "https://github.com/codesphere-u"
+      },
+      {
+        "@type": "Person",
+        "@id": "https://codesphere-u.github.io/#author",
+        "name": "Akandwanaho Ivan Alvin",
+        "worksFor": { "@id": "https://codesphere-u.github.io/#org" }
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://codesphere-u.github.io/synapse-router/#website",
+        "url": "https://codesphere-u.github.io/synapse-router/",
+        "name": "Synapse-Router",
+        "publisher": { "@id": "https://codesphere-u.github.io/#org" }
+      },
+      {
+        "@type": "SoftwareApplication",
+        "name": "Synapse-Router",
+        "softwareVersion": "1.2.0",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "macOS, Linux, Windows",
+        "license": "https://opensource.org/licenses/MIT",
+        "url": "https://codesphere-u.github.io/synapse-router/",
+        "codeRepository": "https://github.com/codesphere-u/synapse-router",
+        "author": { "@id": "https://codesphere-u.github.io/#author" },
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How much does Synapse-Router reduce multi-agent LLM token spend?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "In the reproducible 500-request benchmark across 6 endpoints, Synapse-Router cut spend from $3.7402 USD to $0.3520 USD (90.59% saved) while maintaining 100.00% cascade quality retention."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does Synapse-Router prevent HTTP 429 rate-limit outages?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Sliding-window RateGovernor tracks RPM/TPM saturation preemptively, while EndpointHealthRegistry trips a 3-state circuit breaker in under 0.05 ms to fail over to healthy peer endpoints."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <div class="page-col">
+    <header class="site-header">
+      <a class="brand-mark" href="index.html">
+        <svg class="brand-mascot" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+          <rect width="64" height="64" rx="16" fill="#0c4a6e"/>
+          <path d="M14 32h14l8-14h14M28 32l8 14h14" stroke="#e0f2fe" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="14" cy="32" r="5" fill="#0284c7" stroke="#e0f2fe" stroke-width="2"/>
+          <circle cx="36" cy="18" r="5" fill="#f59e0b" stroke="#fef3c7" stroke-width="2"/>
+          <circle cx="50" cy="18" r="4.5" fill="#e0f2fe"/>
+          <circle cx="36" cy="46" r="5" fill="#0284c7" stroke="#e0f2fe" stroke-width="2"/>
+          <circle cx="50" cy="46" r="4.5" fill="#fef3c7"/>
+        </svg>
+        <svg class="brand-wordmark-svg" width="196" height="36" viewBox="0 0 196 36" role="img" aria-label="Synapse-Router">
+          <text x="98" y="27" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="25" font-weight="700" fill="#0f172a">Synapse-Router</text>
+        </svg>
+        <span class="sr-only">Synapse-Router</span>
+      </a>
+      <nav class="site-nav" aria-label="Primary Navigation">
+        <a href="index.html" class="active">Home</a>
+        <a href="studio.html">Studio</a>
+        <a href="proof.html">Benchmarks</a>
+        <a href="rules.html">Rules &amp; MCP</a>
+        <a href="docs.html">Docs</a>
+        <a href="https://github.com/codesphere-u/synapse-router">GitHub</a>
+      </nav>
+    </header>
+
+    <main>
+      <section style="text-align:center;">
+        <p class="hero-kicker">v1.2.0 &middot; Multi-Model Agent Gateway</p>
+        <h1 class="hero-title">Route agent steps at 0.75 ms, not frontier prices.</h1>
+        <p class="hero-lead">
+          Pareto cost-latency routing, 64-bit SimHash semantic caching, 3-state circuit breakers, sliding-window rate governance, and Nexus Aegis G2 attestation.
+        </p>
+
+        <div class="hero-actions">
+          <div class="cta-wrap">
+            <button type="button" class="btn-primary" data-popover-toggle="installPopover">Install Synapse-Router</button>
+            <div id="installPopover" class="cta-popover" role="dialog" aria-label="Install commands">
+              <p class="cta-popover-title">Quick Install &amp; Benchmark</p>
+              <div class="cmd-row">
+                <code>pip install -e .</code>
+                <button type="button" class="copy-mini" data-copy="pip install -e .">Copy</button>
+              </div>
+              <div class="cmd-row">
+                <code>synapse-router benchmark --requests 500</code>
+                <button type="button" class="copy-mini" data-copy="synapse-router benchmark --requests 500">Copy</button>
+              </div>
+              <div class="cmd-row">
+                <code>claude mcp add --transport http synapse-router https://synapse-router.vercel.app/mcp</code>
+                <button type="button" class="copy-mini" data-copy="claude mcp add --transport http synapse-router https://synapse-router.vercel.app/mcp">Copy</button>
+              </div>
+            </div>
+          </div>
+          <a class="btn-secondary" href="studio.html">Open Routing Studio</a>
+          <a class="btn-secondary" href="docs.html">Read Docs</a>
+        </div>
+      </section>
+
+      <section class="flow-section">
+        <p class="section-label">Cascade Pipeline</p>
+        <h2 class="section-heading">Deterministic cost control with zero quality regression</h2>
+        <div class="flow-grid">
+          <article class="flow-step">
+            <span class="step-num">1</span>
+            <h3>SimHash64 Cache</h3>
+            <p>Isolated by tool schema &amp; system prompt SHA-256 fingerprint, matching near-duplicates at $0.00 cost.</p>
+          </article>
+          <article class="flow-step">
+            <span class="step-num">2</span>
+            <h3>Pareto Tier Cascade</h3>
+            <p>Starts on Fast Local or Balanced endpoints and escalates only when schema or confidence thresholds fail.</p>
+          </article>
+          <article class="flow-step">
+            <span class="step-num">3</span>
+            <h3>Rate &amp; Aegis G2</h3>
+            <p>Guards RPM/TPM saturation, flips 3-state circuit breakers on 429s, and signs RFC 6962 Aegis G2 receipts.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="flow-section">
+        <p class="section-label">Quick Route Preview</p>
+        <h2 class="section-heading">Inspect live tier selection &amp; savings</h2>
+        <div class="handy-card soft">
+          <label class="field-label" for="quickRouteSelect">Choose agent step workload</label>
+          <select id="quickRouteSelect" class="handy-select" style="margin-bottom:14px;">
+            <option value="trivial">Classify Support Intent (FAST_LOCAL)</option>
+            <option value="cascade">Strict Tool Schema + HTTP 429 Failover (BALANCED)</option>
+            <option value="frontier">Formal Invariant Proof (FRONTIER_REASONING)</option>
+          </select>
+          <div id="quickRouteOut"></div>
+          <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">
+            <a class="btn-primary btn-sm" href="studio.html">Launch Full Studio</a>
+            <a class="btn-secondary btn-sm" href="rules.html">Inspect 6 MCP Tools</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="flow-section">
+        <p class="section-label">Measured Benchmark (500 Requests / 6 Endpoints)</p>
+        <h2 class="section-heading">Verified spend reduction without dropped steps</h2>
+        <div class="stat-grid">
+          <div class="stat-box">
+            <div class="stat-val">90.59%</div>
+            <div class="stat-lbl">USD Spend Saved</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val">0.75 ms</div>
+            <div class="stat-lbl">Routing P50 Latency</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val">100.0%</div>
+            <div class="stat-lbl">13/13 HTTP 429 Recovery</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val">22.20%</div>
+            <div class="stat-lbl">SimHash Cache Hit Rate</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="flow-section">
+        <p class="section-label">Frequently Asked Questions</p>
+        <h2 class="section-heading">Architecture &amp; safety guarantees</h2>
+        <details class="faq-item">
+          <summary>How does Synapse-Router guarantee output quality on cheaper tiers?</summary>
+          <p><code>ResponseValidator</code> verifies JSON schema constraints, non-empty tool arguments, absence of refusals, and <code>confidence &gt;= min_confidence</code>. Any failure triggers automatic escalation up the cascade.</p>
+        </details>
+        <details class="faq-item">
+          <summary>What does Nexus Aegis G2 export prove?</summary>
+          <p><code>export_aegis_g2</code> produces canonical <code>G2_BUDGET_ROUTING</code> payloads with RFC 6962 <code>0x00</code>-prefixed SHA-256 leaf hashes enforcing USD caps, 120,000-token ceilings, and anti-overprovisioning checks.</p>
+        </details>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>Synapse-Router v1.2.0 &middot; MIT License &middot; Codesphere Innovations (U) Limited</span>
+      <div class="footer-links">
+        <a href="docs.html">Docs</a>
+        <a href="studio.html">Studio</a>
+        <a href="llms.txt">llms.txt</a>
+        <a href="https://github.com/codesphere-u/synapse-router/releases/tag/v1.2.0">Release v1.2.0</a>
+      </div>
+    </footer>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script defer data-domain="codesphere-u.github.io" src="https://plausible.io/js/script.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

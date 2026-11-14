@@ -1,0 +1,11 @@
+{
+  "name": "Synapse-Router — Cost-Aware Multi-Model AI Agent Router",
+  "short_name": "Synapse-Router",
+  "description": "Pareto multi-model AI agent router, confidence-gated cascade engine, 64-bit SimHash semantic cache, 3-state circuit breaker, and Nexus Aegis G2 exporter.",
+  "start_url": "/synapse-router/",
+  "scope": "/synapse-router/",
+  "display": "standalone",
+  "background_color": "#fffdf2",
+  "theme_color": "#0284c7",
+  "icons": [{ "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

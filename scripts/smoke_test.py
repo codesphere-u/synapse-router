@@ -8,9 +8,16 @@ import json
 import sys
 import urllib.error
 import urllib.request
+from typing import Any
 
 
-def call(url, payload=None, raw=None, method="POST", headers=None):
+def call(
+    url: str,
+    payload: dict[str, Any] | None = None,
+    raw: bytes | None = None,
+    method: str = "POST",
+    headers: dict[str, str] | None = None,
+) -> tuple[int, dict[str, str], str]:
     hdrs = {"Content-Type": "application/json"}
     if headers:
         hdrs.update(headers)
@@ -28,9 +35,9 @@ def main() -> int:
     min_tools = int(sys.argv[2]) if len(sys.argv) > 2 else 1
     min_resources = int(sys.argv[3]) if len(sys.argv) > 3 else 1
     min_prompts = int(sys.argv[4]) if len(sys.argv) > 4 else 1
-    failures = []
+    failures: list[str] = []
 
-    def check(name, cond):
+    def check(name: str, cond: object) -> None:
         print(("PASS " if cond else "FAIL ") + name)
         if not cond:
             failures.append(name)

@@ -1,0 +1,9 @@
+# Synapse-Router
+
+> Cost-aware multi-model AI agent router with Pareto tier selection, 64-bit SimHash semantic caching, 3-state circuit breaker, sliding-window RateGovernor, and Nexus Aegis G2 attestation.
+
+- Website: https://codesphere-u.github.io/synapse-router/
+- Docs: https://codesphere-u.github.io/synapse-router/docs.html
+- Hosted MCP Endpoint: https://synapse-router.vercel.app/mcp
+- Repository: https://github.com/codesphere-u/synapse-router
+- Full Context: https://codesphere-u.github.io/synapse-router/llms-full.txt

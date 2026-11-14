@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Benchmarks &amp; Proof — Synapse-Router</title>
+  <meta name="description" content="Reproducible 500-request benchmark across 6 model endpoints showing 90.59% spend savings, 0.75 ms P50 routing latency, and 100% 429 recovery." />
+  <link rel="canonical" href="https://codesphere-u.github.io/synapse-router/proof.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Benchmarks &amp; Proof — Synapse-Router" />
+  <meta property="og:description" content="Measured P50/P95 routing latency, $3.3881 USD saved across 500 steps, and 13/13 HTTP 429 failover recovery." />
+  <meta property="og:image" content="https://codesphere-u.github.io/synapse-router/og-image.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page-col">
+    <header class="site-header">
+      <a class="brand-mark" href="index.html">
+        <svg class="brand-mascot" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+          <rect width="64" height="64" rx="16" fill="#0c4a6e"/>
+          <path d="M14 32h14l8-14h14M28 32l8 14h14" stroke="#e0f2fe" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="14" cy="32" r="5" fill="#0284c7" stroke="#e0f2fe" stroke-width="2"/>
+          <circle cx="36" cy="18" r="5" fill="#f59e0b" stroke="#fef3c7" stroke-width="2"/>
+          <circle cx="36" cy="46" r="5" fill="#0284c7" stroke="#e0f2fe" stroke-width="2"/>
+        </svg>
+        <svg class="brand-wordmark-svg" width="196" height="36" viewBox="0 0 196 36" role="img" aria-label="Synapse-Router">
+          <text x="98" y="27" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="25" font-weight="700" fill="#0f172a">Synapse-Router</text>
+        </svg>
+        <span class="sr-only">Synapse-Router</span>
+      </a>
+      <nav class="site-nav" aria-label="Primary Navigation">
+        <a href="index.html">Home</a>
+        <a href="studio.html">Studio</a>
+        <a href="proof.html" class="active">Benchmarks</a>
+        <a href="rules.html">Rules &amp; MCP</a>
+        <a href="docs.html">Docs</a>
+        <a href="https://github.com/codesphere-u/synapse-router">GitHub</a>
+      </nav>
+    </header>
+
+    <main>
+      <p class="hero-kicker">Reproducible Evidence</p>
+      <h1 class="hero-title" style="font-size:2rem;">500-Request Multi-Agent Benchmark</h1>
+      <p style="color:var(--muted);margin-bottom:20px;">Measured locally with <code>synapse-router benchmark --requests 500</code> across 6 model endpoints with injected HTTP 429 spikes.</p>
+
+      <div class="handy-card">
+        <table>
+          <thead>
+            <tr><th>Metric</th><th>Measured Result</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Routing Engine P50 Latency</td><td>745.69 &mu;s (0.7457 ms)</td></tr>
+            <tr><td>Routing Engine P95 Latency</td><td>1031.33 &mu;s (1.0313 ms)</td></tr>
+            <tr><td>Frontier-Only Baseline Cost</td><td>$3.7402 USD</td></tr>
+            <tr><td>Synapse-Router Total Cost</td><td>$0.3520 USD</td></tr>
+            <tr><td>Total USD Cost Reduction</td><td><strong>$3.3881 USD (90.59% saved)</strong></td></tr>
+            <tr><td>Cascade Quality Retention</td><td>100.00% (<code>confidence &gt;= 0.78</code>)</td></tr>
+            <tr><td>Provider Failover Recovery Rate</td><td>100.00% (13/13 HTTP 429s)</td></tr>
+            <tr><td>Cascade Escalations Triggered</td><td>14 escalations</td></tr>
+            <tr><td>Semantic Cache Hit Rate</td><td>22.20% (64-bit SimHash)</td></tr>
+            <tr><td>Final Tier Distribution</td><td>285 FAST_LOCAL / 115 BALANCED / 100 FRONTIER_REASONING</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="handy-card soft">
+        <h2 style="font-family:Georgia,serif;margin:0 0 10px;font-size:1.2rem;">Run Locally</h2>
+        <pre><code>synapse-router benchmark --requests 500
+synapse-router rate-status --json
+synapse-router export-aegis --cost 0.003 --budget 0.05 --tokens 900</code></pre>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <span>Synapse-Router v1.2.0 &middot; MIT License</span>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="studio.html">Studio</a>
+        <a href="docs.html">Docs</a>
+      </div>
+    </footer>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>

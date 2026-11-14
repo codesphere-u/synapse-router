@@ -50,7 +50,7 @@ class SynapseHTTPHandler(BaseHTTPRequestHandler):
                 {
                     "status": "healthy",
                     "server": "synapse-router",
-                    "version": "1.1.0",
+                    "version": "1.2.0",
                     "transport": ["stdio", "http", "sse"],
                     "description": "Dynamic Semantic Router & Multi-Tier Cost Gateway MCP Server",
                 }

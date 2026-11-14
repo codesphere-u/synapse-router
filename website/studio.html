@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Routing &amp; Aegis G2 Studio — Synapse-Router</title>
+  <meta name="description" content="Simulate Pareto multi-tier routing, 64-bit SimHash cache hits, HTTP 429 circuit-breaker failover, and Nexus Aegis G2 RFC 6962 attestation." />
+  <link rel="canonical" href="https://codesphere-u.github.io/synapse-router/studio.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Routing &amp; Aegis G2 Studio — Synapse-Router" />
+  <meta property="og:description" content="Interactive multi-model routing cascade and Nexus Aegis G2 leaf simulator." />
+  <meta property="og:image" content="https://codesphere-u.github.io/synapse-router/og-image.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page-col">
+    <header class="site-header">
+      <a class="brand-mark" href="index.html">
+        <svg class="brand-mascot" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+          <rect width="64" height="64" rx="16" fill="#0c4a6e"/>
+          <path d="M14 32h14l8-14h14M28 32l8 14h14" stroke="#e0f2fe" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="14" cy="32" r="5" fill="#0284c7" stroke="#e0f2fe" stroke-width="2"/>
+          <circle cx="36" cy="18" r="5" fill="#f59e0b" stroke="#fef3c7" stroke-width="2"/>
+          <circle cx="36" cy="46" r="5" fill="#0284c7" stroke="#e0f2fe" stroke-width="2"/>
+        </svg>
+        <svg class="brand-wordmark-svg" width="196" height="36" viewBox="0 0 196 36" role="img" aria-label="Synapse-Router">
+          <text x="98" y="27" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="25" font-weight="700" fill="#0f172a">Synapse-Router</text>
+        </svg>
+        <span class="sr-only">Synapse-Router</span>
+      </a>
+      <nav class="site-nav" aria-label="Primary Navigation">
+        <a href="index.html">Home</a>
+        <a href="studio.html" class="active">Studio</a>
+        <a href="proof.html">Benchmarks</a>
+        <a href="rules.html">Rules &amp; MCP</a>
+        <a href="docs.html">Docs</a>
+        <a href="https://github.com/codesphere-u/synapse-router">GitHub</a>
+      </nav>
+    </header>
+
+    <main>
+      <p class="hero-kicker">Interactive Simulator</p>
+      <h1 class="hero-title" style="font-size:2rem;">Cascade Routing &amp; Aegis G2 Studio</h1>
+      <p style="color:var(--muted);margin-bottom:20px;">Test workload complexity, tight latency SLAs, HTTP 429 circuit-breaker trips, SimHash cache hits, and RFC 6962 Aegis G2 receipts.</p>
+
+      <div class="handy-card">
+        <div class="preset-bar">
+          <button type="button" class="preset-chip active" data-preset="trivial">Trivial Intent (FAST_LOCAL)</button>
+          <button type="button" class="preset-chip" data-preset="cascade">HTTP 429 Failover (BALANCED)</button>
+          <button type="button" class="preset-chip" data-preset="frontier">Formal Proof (FRONTIER)</button>
+        </div>
+
+        <label class="field-label" for="studioPrompt">Agent Step Prompt</label>
+        <textarea id="studioPrompt" class="handy-textarea" style="margin-bottom:14px;"></textarea>
+
+        <div class="studio-grid" style="margin-bottom:14px;">
+          <div>
+            <label class="field-label" for="studioSla">Latency SLA (ms)</label>
+            <input id="studioSla" class="handy-input" type="number" min="100" max="5000" step="50" value="250" />
+          </div>
+          <div>
+            <label class="field-label" for="studioBudget">Budget Cap (USD)</label>
+            <input id="studioBudget" class="handy-input" type="number" min="0.001" max="1" step="0.005" value="0.05" />
+          </div>
+        </div>
+
+        <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;">
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.88rem;font-weight:600;cursor:pointer;">
+            <input id="studioCacheHit" type="checkbox" /> SimHash64 Cache Hit
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.88rem;font-weight:600;cursor:pointer;">
+            <input id="studioSimulate429" type="checkbox" /> Inject HTTP 429 Spike
+          </label>
+          <button id="studioRunBtn" type="button" class="btn-primary btn-sm">Evaluate Route</button>
+        </div>
+      </div>
+
+      <section class="handy-card soft">
+        <h2 style="font-family:Georgia,serif;margin:0 0 12px;font-size:1.25rem;">Routing Decision &amp; Failover Trace</h2>
+        <div id="studioOutput"></div>
+      </section>
+
+      <section class="handy-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+          <h2 style="font-family:Georgia,serif;margin:0;font-size:1.15rem;">Nexus Aegis <code>G2_BUDGET_ROUTING</code> Payload</h2>
+          <button type="button" class="copy-mini" onclick="copyText(document.getElementById('studioAegisOut').textContent)">Copy JSON</button>
+        </div>
+        <pre id="studioAegisOut"></pre>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>Synapse-Router v1.2.0 &middot; MIT License</span>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="proof.html">Benchmarks</a>
+        <a href="docs.html">Docs</a>
+      </div>
+    </footer>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>

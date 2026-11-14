@@ -40,7 +40,7 @@ from synapse_router.router import (
 )
 from synapse_router.server import MCP_TOOLS_SPEC, SynapseMCPServer
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 
 __all__ = [
     "MCP_TOOLS_SPEC",

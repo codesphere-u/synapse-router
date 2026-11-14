@@ -5,6 +5,17 @@ All notable changes to `synapse-router` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-11-14
+
+### Added
+- **Editorial Website & Interactive Multi-Model Routing Studio (`website/`)**:
+  - Multi-page Warm Ivory (`#fffdf2`) editorial website with Electric Cerulean (`#0284c7`) and Sunburst Marigold (`#f59e0b`) accents across `index.html`, `studio.html`, `proof.html`, `rules.html`, and `docs.html`.
+  - Interactive `studio.html` simulator for Pareto tier selection (`FAST_LOCAL`, `BALANCED`, `FRONTIER_REASONING`), 64-bit SimHash semantic cache matching, 3-state circuit breaker failover, sliding-window `RateGovernor` checks, and Nexus Aegis `G2_BUDGET_ROUTING` RFC 6962 leaf export.
+  - Full SEO/GEO suite (`llms.txt`, `llms-full.txt`, `robots.txt`, `sitemap.xml`, `manifest.webmanifest`, Schema.org `@graph` JSON-LD, and `website/marketing/` playbooks).
+- **Documentation, Pages & Verification**:
+  - Added `docs/GETTING_STARTED.md`, `docs/ROUTING_AND_AEGIS_G2.md`, `.github/workflows/pages.yml`, and `tests/test_website_and_docs.py`.
+  - Added strict type annotations to `scripts/smoke_test.py` and bumped package/MCP/gateway version to `1.2.0`.
+
 ## [1.1.0] - 2026-11-07
 
 ### Added
